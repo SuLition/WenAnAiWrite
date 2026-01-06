@@ -689,9 +689,9 @@ async fn set_window_effect(
             "acrylic" => {
                 // Acrylic 效果需要设置背景色
                 let color = if is_dark {
-                    [30, 31, 34, 200] // 暗色半透明
+                    (30, 31, 34, 200) // 暗色半透明
                 } else {
-                    [255, 255, 255, 200] // 亮色半透明
+                    (255, 255, 255, 200) // 亮色半透明
                 };
                 apply_acrylic(&window, Some(color))
                     .map_err(|e| format!("应用 Acrylic 效果失败: {}", e))?;
