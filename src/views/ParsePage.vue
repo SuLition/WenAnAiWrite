@@ -12,6 +12,7 @@ import {
   downloadXiaohongshu,
   downloadAudioData
 } from '../services/download/downloadService.js';
+import { openDownloadDir } from '../services/download/tauriDownload.js';
 import {formatNumber, formatDuration, formatPubDate} from '../utils/format.js';
 import {extractUrlFromText} from '../utils/urlParser.js';
 import {PLATFORMS, AI_MODELS, REWRITE_STYLES, DEFAULT_PROMPTS} from '../constants/options.js';
@@ -612,6 +613,12 @@ const handleDownload = async () => {
               </svg>
               <span class="download-text">{{ isDownloading ? downloadProgress + '%' : '下载' }}</span>
             </button>
+            <button class="open-folder-btn" title="打开下载文件夹" @click="openDownloadDir">
+              <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 11v6M9 14l3-3 3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
@@ -1048,6 +1055,35 @@ const handleDownload = async () => {
 .download-button:disabled:not(.downloading) {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* 打开文件夹按钮 */
+.open-folder-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary, #3d3f43);
+  border: 1px solid var(--border-primary, #3d3f43);
+  border-radius: 6px;
+  color: var(--text-secondary, #afb1b3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.open-folder-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.open-folder-btn:hover {
+  background: var(--accent-color, #4a9eff);
+  border-color: var(--accent-color, #4a9eff);
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
 /* 底部文案模块 */

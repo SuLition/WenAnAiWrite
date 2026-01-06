@@ -6,5 +6,4 @@ export const toasterOptions = {
     richColors: true,
     visibleToasts: 8,
     offset: '32px',
-    theme: 'dark',
 };

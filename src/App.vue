@@ -1,13 +1,17 @@
 <script setup>
-import {onMounted, ref, watch} from 'vue'
+import {onMounted, ref, watch, computed} from 'vue'
 import {Toaster} from 'vue-sonner'
 import CloseMask from "./components/common/CloseMask.vue";
 import {toasterOptions} from "./utils/index.js";
 import TitleBar from "./components/common/TitleBar.vue";
 import Sidebar from "./components/common/Sidebar.vue";
-import {initTheme} from './services/theme'
+import {initTheme, useAppliedTheme} from './services/theme'
 import {getCurrentWindow} from '@tauri-apps/api/window'
 import {loadConfig} from './services/config'
+
+// 当前主题
+const appliedTheme = useAppliedTheme()
+const toasterTheme = computed(() => appliedTheme.value === 'dark' ? 'dark' : 'light')
 
 // 页面过渡效果
 const pageTransition = ref('fade')
@@ -57,7 +61,7 @@ window.__refreshTransition = loadTransitionConfig
         </transition>
       </router-view>
       <!-- 消息通知 -->
-      <Toaster v-bind="toasterOptions"/>
+      <Toaster v-bind="toasterOptions" :theme="toasterTheme"/>
       <!-- 关闭提示遮罩层 -->
       <CloseMask/>
     </div>
