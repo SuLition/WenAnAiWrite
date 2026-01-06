@@ -90,7 +90,7 @@ html.window-effect-enabled .main-content {
 html.window-effect-enabled .sidebar {
   background: transparent !important;
 }
-
+ 
 /* 启用毛玻璃效果时设置页面透明 */
 html.window-effect-enabled .settings-page {
   background: transparent !important;

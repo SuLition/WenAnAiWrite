@@ -59,7 +59,8 @@ const bilibiliLoginState = reactive({
   status: 'idle', // idle | loading | scanning | confirming | success | expired | error
   statusText: '',
   userInfo: null,
-  pollTimer: null
+  pollTimer: null,
+  loadingUserInfo: false  // 是否正在加载用户信息
 })
 
 // 加载配置
@@ -107,6 +108,7 @@ const loadBilibiliLoginState = async () => {
     bilibiliLoginState.isLoggedIn = true
     bilibiliLoginState.status = 'success'
     bilibiliLoginState.statusText = '已登录'
+    bilibiliLoginState.loadingUserInfo = true  // 开始加载用户信息
     try {
       const userInfo = await getUserInfo()
       if (userInfo) {
@@ -114,12 +116,15 @@ const loadBilibiliLoginState = async () => {
       }
     } catch (e) {
       console.warn('获取B站用户信息失败:', e)
+    } finally {
+      bilibiliLoginState.loadingUserInfo = false  // 加载完成
     }
   } else {
     bilibiliLoginState.isLoggedIn = false
     bilibiliLoginState.status = 'idle'
     bilibiliLoginState.statusText = ''
     bilibiliLoginState.userInfo = null
+    bilibiliLoginState.loadingUserInfo = false
   }
 }
 
@@ -340,7 +345,13 @@ onUnmounted(() => {
         <div class="bilibili-login-area">
           <!-- 已登录状态 -->
           <div v-if="bilibiliLoginState.isLoggedIn" class="login-success">
-            <div v-if="bilibiliLoginState.userInfo" class="user-info">
+            <!-- 正在加载用户信息 -->
+            <div v-if="bilibiliLoginState.loadingUserInfo" class="user-info-loading">
+              <div class="loading-spinner"></div>
+              <span>加载中...</span>
+            </div>
+            <!-- 已获取用户信息 -->
+            <div v-else-if="bilibiliLoginState.userInfo" class="user-info">
               <img :src="bilibiliLoginState.userInfo.face" alt="avatar" class="user-avatar"/>
               <div class="user-detail">
                 <div class="user-name">{{ bilibiliLoginState.userInfo.uname }}</div>
@@ -350,6 +361,7 @@ onUnmounted(() => {
                 </div>
               </div>
             </div>
+            <!-- 获取用户信息失败，仅显示已登录 -->
             <div v-else class="login-status-text">✅ 已登录</div>
             <button class="btn btn-danger" @click="logoutBilibili">退出登录</button>
           </div>
@@ -798,6 +810,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 16px;
   width: 100%;
+  min-height: 48px;  /* 固定最小高度，防止状态切换时抖动 */
 }
 
 .user-info {
@@ -852,6 +865,25 @@ onUnmounted(() => {
   flex: 1;
   font-size: 14px;
   color: #10b981;
+}
+
+.user-info-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  font-size: 14px;
+  color: var(--text-tertiary, #6c6e73);
+  height: 48px;  /* 与用户头像高度一致 */
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-primary, #3d3f43);
+  border-top-color: #fb7299;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
 .login-pending {
