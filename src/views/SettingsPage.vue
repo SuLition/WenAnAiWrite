@@ -17,8 +17,7 @@ import CustomSelect from '../components/common/CustomSelect.vue'
 // 窗口效果选项
 const WINDOW_EFFECT_OPTIONS = [
   { value: 'none', label: '无效果' },
-  { value: 'mica', label: 'Mica (云母)' },
-  { value: 'acrylic', label: 'Acrylic (亚克力)' }
+  { value: 'mica', label: 'Mica (云母)' }
 ]
 
 // 窗口效果

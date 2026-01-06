@@ -10,10 +10,18 @@ import {getCurrentWindow} from '@tauri-apps/api/window'
 
 // 初始化主题并显示窗口
 onMounted(async () => {
-  await initTheme()
-  // 前端加载完成后显示窗口
-  const appWindow = getCurrentWindow()
-  await appWindow.show()
+  try {
+    await initTheme()
+  } catch (e) {
+    console.error('初始化主题失败:', e)
+  }
+  // 确保无论如何都显示窗口
+  try {
+    const appWindow = getCurrentWindow()
+    await appWindow.show()
+  } catch (e) {
+    console.error('显示窗口失败:', e)
+  }
 })
 </script>
 
@@ -90,7 +98,11 @@ html.window-effect-enabled .settings-page {
 
 html.window-effect-enabled .settings-section {
   background: rgba(43, 45, 48, 0.6) !important;
-  backdrop-filter: blur(10px);
+}
+
+/* 亮色主题下的毛玻璃效果 */
+html.light.window-effect-enabled .settings-section {
+  background: rgba(255, 255, 255, 0.7) !important;
 }
 
 @keyframes spin {
