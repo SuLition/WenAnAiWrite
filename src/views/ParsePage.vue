@@ -1,5 +1,5 @@
 <script setup>
-import {ref, computed, watch} from 'vue';
+import {ref, computed, watch, onMounted} from 'vue';
 import {toast} from 'vue-sonner';
 import {parseVideo as parseBilibiliVideoApi} from '../services/api/bilibiliApi.js';
 import {parseVideo as parseDouyinVideoApi} from '../services/api/douyinApi.js';
@@ -41,19 +41,43 @@ const platforms = [
 ];
 
 const aiModels = [
+  {value: 'deepseek', label: 'DeepSeek'},
   {value: 'doubao', label: '豆包'},
-  {value: 'qwen', label: '通义千问'},
-  {value: 'chatgpt', label: 'ChatGPT'}
+  {value: 'qianwen', label: '千问'},
+  {value: 'hunyuan', label: '元宝'}
 ];
 
 const rewriteStyles = [
   {value: 'professional', label: '专业'},
-  {value: 'casual', label: '轻松'},
-  {value: 'formal', label: '正式'},
-  {value: 'creative', label: '创意'}
+  {value: 'casual', label: '口语化'},
+  {value: 'funny', label: '幽默'},
+  {value: 'short', label: '精简'}
 ];
 
 const qualityOptions = ref([]);
+
+// 默认提示词
+const defaultPrompts = {
+  professional: '请将以下文案改写为专业、正式的风格，适合商务或官方场合使用。保持信息完整，语言精炼专业：',
+  casual: '请将以下文案改写为轻松、口语化的风格，像朋友聊天一样亲切自然，可以适当加入网络流行语和表情：',
+  funny: '请将以下文案改写为幽默搞笑的风格，加入有趣的比喻、夸张和调侃，让读者会心一笑：',
+  short: '请将以下文案精简压缩，只保留最核心的信息，用最少的字数表达完整含义：'
+};
+
+// 加载提示词（直接使用默认提示词）
+const loadPrompt = (style) => {
+  customPrompt.value = defaultPrompts[style] || '';
+};
+
+// 风格切换时加载对应提示词
+const onStyleChange = (newStyle) => {
+  loadPrompt(newStyle);
+};
+
+// 初始化加载
+onMounted(() => {
+  loadPrompt(rewriteStyle.value);
+});
 
 const currentPlatformComponent = computed(() => {
   const components = {
@@ -132,7 +156,11 @@ const parseBilibiliVideo = async () => {
     // 简介
     desc: data.desc || '暂无简介',
     // 发布时间
-    pubdate: data.createTime || formatPubDate(data.pubdate)
+    pubdate: data.createTime || formatPubDate(data.pubdate),
+    // 时长（秒）- B站的 durationRaw 才是数字，duration 是格式化后的字符串
+    durationRaw: data.durationRaw || 0,
+    // 分辨率（统一为字符串格式）
+    dimensionStr: data.dimension ? `${data.dimension.width}x${data.dimension.height}` : ''
   };
 
   // 设置下载选项
@@ -172,10 +200,12 @@ const parseDouyinVideo = async () => {
     collects: formatNumber(data.collects || 0),
     // 简介
     desc: data.title || '',
-    // 时长
-    duration: formatDuration(data.duration || 0),
+    // 时长（秒）
+    durationRaw: data.durationRaw || data.duration || 0,
     // 发布时间
-    pubdate: data.createTime || ''
+    pubdate: data.createTime || '',
+    // 分辨率（已是字符串格式）
+    dimensionStr: data.dimension || ''
   };
 
   videoInfo.value = douyinInfo;
@@ -196,7 +226,29 @@ const parseDouyinVideo = async () => {
 // 解析小红书视频
 const parseXiaohongshuVideo = async () => {
   const data = await parseXiaohongshuVideoApi(videoUrl.value);
-  videoInfo.value = data;
+
+  // 统一数据格式
+  const xhsInfo = {
+    ...data,
+    // 作者信息统一格式
+    author: {
+      name: data.author || '未知作者',
+      avatar: data.authorAvatar || '',
+      id: data.authorId || ''
+    },
+    // 简介
+    desc: data.desc || data.title || '',
+    // 时长（秒）- 确保是数字
+    durationRaw: parseInt(data.duration, 10) || 0,
+    // 发布时间
+    pubdate: data.createTime || '',
+    // 分辨率
+    dimensionStr: data.dimension || '',
+    // 评论数
+    comments: data.comments || '0'
+  };
+
+  videoInfo.value = xhsInfo;
 
   // 设置下载选项
   if (data.videoStreams && data.videoStreams.length > 0) {
@@ -364,7 +416,7 @@ const handleCopy = () => {
 };
 
 const handleDownload = async () => {
-  if (!videoInfo.value || !selectedQuality.value) {
+  if (!videoInfo.value || selectedQuality.value === '' || selectedQuality.value === null || selectedQuality.value === undefined) {
     toast.warning('请选择下载清晰度');
     return;
   }
@@ -449,72 +501,98 @@ const handleDownload = async () => {
           <span class="video-title">{{ videoInfo.title }}</span>
         </div>
 
-        <!-- 第二行：统计数据横排 -->
+        <!-- 第二行：统计数据横排 + 时长/分辨率/发布时间靠右 -->
         <div class="stats-row">
-          <div v-if="videoInfo.views" class="stat-item">
-            <svg fill="none" viewBox="0 0 24 24">
-              <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2"/>
-              <path
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span>{{ videoInfo.views }}</span>
+          <div class="stats-left">
+            <div v-if="videoInfo.views" class="stat-item">
+              <svg fill="none" viewBox="0 0 24 24">
+                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2"/>
+                <path
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    stroke="currentColor" stroke-width="2"/>
+              </svg>
+              <span>{{ videoInfo.views }}</span>
+            </div>
+            <!-- B站弹幕 -->
+            <div v-if="videoInfo.danmaku" class="stat-item">
+              <svg fill="none" viewBox="0 0 24 24">
+                <path
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                    stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              </svg>
+              <span>{{ videoInfo.danmaku }}</span>
+            </div>
+            <div v-if="videoInfo.likes" class="stat-item">
+              <svg fill="none" viewBox="0 0 24 24">
+                <path
+                    d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"
+                    stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              </svg>
+              <span>{{ videoInfo.likes }}</span>
+            </div>
+            <!-- B站投币 -->
+            <div v-if="videoInfo.coin" class="stat-item">
+              <svg fill="none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 6v12M9 9h6M9 15h6" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+              </svg>
+              <span>{{ videoInfo.coin }}</span>
+            </div>
+            <!-- 评论(抖音/小红书) -->
+            <div v-if="videoInfo.comments" class="stat-item">
+              <svg fill="none" viewBox="0 0 24 24">
+                <path
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                    stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              </svg>
+              <span>{{ videoInfo.comments }}</span>
+            </div>
+            <!-- 收藏(B站favorite/抖音collects) -->
+            <div v-if="videoInfo.favorite || videoInfo.collects" class="stat-item">
+              <svg fill="none" viewBox="0 0 24 24">
+                <path
+                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    stroke="currentColor" stroke-width="2"/>
+              </svg>
+              <span>{{ videoInfo.favorite || videoInfo.collects }}</span>
+            </div>
+            <!-- 分享(B站share/抖音shares) -->
+            <div v-if="videoInfo.share || videoInfo.shares" class="stat-item">
+              <svg fill="none" viewBox="0 0 24 24">
+                <path
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                    stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              </svg>
+              <span>{{ videoInfo.share || videoInfo.shares }}</span>
+            </div>
           </div>
-          <!-- B站弹幕 -->
-          <div v-if="videoInfo.danmaku" class="stat-item">
-            <svg fill="none" viewBox="0 0 24 24">
-              <path
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                  stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-            </svg>
-            <span>{{ videoInfo.danmaku }}</span>
-          </div>
-          <div v-if="videoInfo.likes" class="stat-item">
-            <svg fill="none" viewBox="0 0 24 24">
-              <path
-                  d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"
-                  stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-            </svg>
-            <span>{{ videoInfo.likes }}</span>
-          </div>
-          <!-- B站投币 -->
-          <div v-if="videoInfo.coin" class="stat-item">
-            <svg fill="none" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-              <path d="M12 6v12M9 9h6M9 15h6" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
-            </svg>
-            <span>{{ videoInfo.coin }}</span>
-          </div>
-          <!-- 评论(抖音/小红书) -->
-          <div v-if="videoInfo.comments" class="stat-item">
-            <svg fill="none" viewBox="0 0 24 24">
-              <path
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                  stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-            </svg>
-            <span>{{ videoInfo.comments }}</span>
-          </div>
-          <!-- 收藏(B站favorite/抖音collects) -->
-          <div v-if="videoInfo.favorite || videoInfo.collects" class="stat-item">
-            <svg fill="none" viewBox="0 0 24 24">
-              <path
-                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                  stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span>{{ videoInfo.favorite || videoInfo.collects }}</span>
-          </div>
-          <!-- 分享(B站share/抖音shares) -->
-          <div v-if="videoInfo.share || videoInfo.shares" class="stat-item">
-            <svg fill="none" viewBox="0 0 24 24">
-              <path
-                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                  stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-            </svg>
-            <span>{{ videoInfo.share || videoInfo.shares }}</span>
+          <!-- 右侧：时长、分辨率、发布时间 -->
+          <div class="stats-right">
+            <span v-if="videoInfo.durationRaw" class="meta-item">
+              <svg fill="none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 6v6l4 2" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+              </svg>
+              <span>{{ formatDuration(videoInfo.durationRaw) }}</span>
+            </span>
+            <span v-if="videoInfo.dimensionStr" class="meta-item">
+              <svg fill="none" viewBox="0 0 24 24">
+                <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 21h8M12 17v4" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+              </svg>
+              <span>{{ videoInfo.dimensionStr }}</span>
+            </span>
+            <span v-if="videoInfo.pubdate" class="meta-item">
+              <svg fill="none" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+              </svg>
+              <span>{{ videoInfo.pubdate }}</span>
+            </span>
           </div>
         </div>
 
-        <!-- 第三行：视频简介 -->
+        <!-- 第四行：视频简介 -->
         <div v-if="videoInfo.desc" class="video-desc">{{ videoInfo.desc }}</div>
 
         <!-- 底部区域：用户头像 + 下载区 -->
@@ -610,6 +688,7 @@ const handleDownload = async () => {
                 v-model="rewriteStyle"
                 :options="rewriteStyles"
                 class="control-select"
+                @change="onStyleChange"
             />
           </div>
         </div>
@@ -765,8 +844,21 @@ const handleDownload = async () => {
 
 .stats-row {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.stats-left {
+  display: flex;
   flex-wrap: wrap;
   gap: 16px;
+  align-items: center;
+}
+
+.stats-right {
+  display: flex;
+  gap: 12px;
   align-items: center;
 }
 
@@ -781,6 +873,19 @@ const handleDownload = async () => {
 .stat-item svg {
   width: 16px;
   height: 16px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+.meta-item svg {
+  width: 14px;
+  height: 14px;
 }
 
 .video-desc {

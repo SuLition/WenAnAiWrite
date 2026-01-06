@@ -57,12 +57,13 @@ class DouyinParser:
             response = requests.get(url, headers=headers, verify=False, timeout=10)
             if response.text:
                 self.data = response.json()
+
                 return self.data
         except Exception as e:
             print(f"[Douyin] Parse error: {e}")
         
         return None
-    
+
     def get_video_info(self) -> Optional[dict]:
         """获取完整视频信息"""
         if not self.data:
@@ -123,6 +124,10 @@ class DouyinParser:
         duration_ms = video_data.get('duration', 0)
         duration_sec = duration_ms // 1000 if duration_ms else 0
         
+        # 修复播放量显示问题：从statistics获取原始数值
+        play_count = statistics.get('play_count', 0)
+        print(f"[Douyin] 统计数据 - 播放: {play_count}, 点赞: {statistics.get('digg_count', 0)}, 评论: {statistics.get('comment_count', 0)}")
+
         return {
             'awemeId': self.aweme_id,
             'title': detail.get('desc', ''),
@@ -146,7 +151,8 @@ class DouyinParser:
             'authorWorks': format_count(author.get('aweme_count', 0)),
             
             # 统计数据
-            'views': format_count(statistics.get('play_count', 0)),
+            'views': format_count(play_count),
+            'viewsRaw': play_count,
             'likes': format_count(statistics.get('digg_count', 0)),
             'comments': format_count(statistics.get('comment_count', 0)),
             'shares': format_count(statistics.get('share_count', 0)),
@@ -154,7 +160,10 @@ class DouyinParser:
             
             # 其他信息
             'createTime': create_time_str,
+            'createTimeRaw': create_time,
             'dimension': dimension,
+            'width': width,
+            'height': height,
             'hashtags': hashtags,
             
             # 权限

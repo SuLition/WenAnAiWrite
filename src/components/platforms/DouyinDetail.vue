@@ -11,6 +11,13 @@
     <div class="stat-grid">
       <div class="stat-item">
         <div class="stat-left">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 12c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3Z"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2Zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8Z"/></svg>
+          <span class="stat-label">播放</span>
+        </div>
+        <span class="stat-value">{{ videoInfo.views }}</span>
+      </div>
+      <div class="stat-item">
+        <div class="stat-left">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
           <span class="stat-label">点赞</span>
         </div>
@@ -44,6 +51,10 @@
         <span class="meta-label">视频ID:</span>
         <span class="meta-value aweme-id">{{ videoInfo.awemeId }}</span>
       </div>
+      <div class="meta-row" v-if="videoInfo.duration">
+        <span class="meta-label">时长:</span>
+        <span class="meta-value">{{ formatDuration(videoInfo.duration) }}</span>
+      </div>
       <div class="meta-row">
         <span class="meta-label">发布时间:</span>
         <span class="meta-value">{{ videoInfo.createTime }}</span>
@@ -63,6 +74,14 @@ defineProps({
     default: null
   }
 })
+
+// 格式化时长
+const formatDuration = (seconds) => {
+  if (!seconds) return '00:00'
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.floor(seconds % 60)
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}
 </script>
 
 <style scoped>
@@ -96,7 +115,7 @@ defineProps({
 /* 统计数据网格 */
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.4rem;
 }
 

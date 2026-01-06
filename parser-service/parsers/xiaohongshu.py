@@ -183,7 +183,7 @@ class XiaohongshuParser:
             # 统计数据
             interact_info = note_detail.get('interactInfo', {})
             likes = interact_info.get('likedCount', '0')
-            comments = note_detail.get('commentCount', '0')
+            comments = interact_info.get('commentCount', '0')  # 从 interactInfo 获取
             collects = interact_info.get('collectedCount', '0')
             shares = interact_info.get('shareCount', '0')
             
@@ -313,6 +313,11 @@ class XiaohongshuParser:
                 except:
                     pass
             
+            # 分辨率
+            width = video_streams[0].get('width', 0) if video_streams else 0
+            height = video_streams[0].get('height', 0) if video_streams else 0
+            dimension = f'{width}x{height}' if width and height else ''
+            
             return {
                 'noteId': first_note_id,
                 'title': title or desc[:50] if desc else '无标题',
@@ -339,6 +344,11 @@ class XiaohongshuParser:
                 
                 'createTime': create_time,
                 'hashtags': hashtags,
+                
+                # 统一格式字段（与 B站/抖音保持一致）
+                'dimension': dimension,
+                'width': width,
+                'height': height,
             }
             
         except Exception as e:
