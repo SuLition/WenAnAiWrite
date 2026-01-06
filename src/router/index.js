@@ -1,5 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { ParsePage, HistoryPage, SettingsPage } from '@/views';
+import { ParsePage, HistoryPage } from '@/views';
+import SettingsLayout from '@/views/settings/SettingsLayout.vue';
+import GeneralSettings from '@/views/settings/GeneralSettings.vue';
+import StorageSettings from '@/views/settings/StorageSettings.vue';
+import AccountSettings from '@/views/settings/AccountSettings.vue';
+import ApiSettings from '@/views/settings/ApiSettings.vue';
 
 const routes = [
   {
@@ -20,9 +25,35 @@ const routes = [
   },
   {
     path: '/settings',
-    name: 'Settings',
-    component: SettingsPage,
-    meta: { title: '设置' }
+    component: SettingsLayout,
+    meta: { title: '设置' },
+    redirect: '/settings/general',
+    children: [
+      {
+        path: 'general',
+        name: 'SettingsGeneral',
+        component: GeneralSettings,
+        meta: { title: '通用设置' }
+      },
+      {
+        path: 'storage',
+        name: 'SettingsStorage',
+        component: StorageSettings,
+        meta: { title: '存储设置' }
+      },
+      {
+        path: 'account',
+        name: 'SettingsAccount',
+        component: AccountSettings,
+        meta: { title: '账号设置' }
+      },
+      {
+        path: 'api',
+        name: 'SettingsApi',
+        component: ApiSettings,
+        meta: { title: 'API设置' }
+      }
+    ]
   }
 ];
 

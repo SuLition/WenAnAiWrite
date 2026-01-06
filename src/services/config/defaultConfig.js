@@ -4,8 +4,23 @@
 
 import { DEFAULT_PROMPTS } from '@/constants/options'
 
+// 页面过渡效果选项
+export const PAGE_TRANSITION_OPTIONS = [
+  { value: 'none', label: '无效果' },
+  { value: 'fade', label: '淡入淡出' },
+  { value: 'slide-left', label: '左滑' },
+  { value: 'slide-right', label: '右滑' },
+  { value: 'slide-up', label: '上滑' },
+  { value: 'zoom', label: '缩放' }
+]
+
 // 应用默认配置
 export const defaultConfig = {
+  // 外观设置
+  appearance: {
+    pageTransition: 'fade'  // 页面过渡效果: none, fade, slide-left, slide-right, slide-up, zoom
+  },
+  
   // 下载设置
   download: {
     savePath: ''  // 空字符串表示使用系统默认下载目录

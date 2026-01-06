@@ -3,4 +3,3 @@
  */
 export { default as ParsePage } from './ParsePage.vue'
 export { default as HistoryPage } from './HistoryPage.vue'
-export { default as SettingsPage } from './SettingsPage.vue'

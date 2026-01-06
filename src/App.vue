@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted} from 'vue'
+import {onMounted, ref, watch} from 'vue'
 import {Toaster} from 'vue-sonner'
 import CloseMask from "./components/common/CloseMask.vue";
 import {toasterOptions} from "./utils/index.js";
@@ -7,11 +7,22 @@ import TitleBar from "./components/common/TitleBar.vue";
 import Sidebar from "./components/common/Sidebar.vue";
 import {initTheme} from './services/theme'
 import {getCurrentWindow} from '@tauri-apps/api/window'
+import {loadConfig} from './services/config'
+
+// 页面过渡效果
+const pageTransition = ref('fade')
+
+// 加载过渡效果配置
+const loadTransitionConfig = () => {
+  const config = loadConfig()
+  pageTransition.value = config.appearance?.pageTransition || 'fade'
+}
 
 // 初始化主题并显示窗口
 onMounted(async () => {
   try {
     await initTheme()
+    loadTransitionConfig()
   } catch (e) {
     console.error('初始化主题失败:', e)
   }
@@ -23,6 +34,16 @@ onMounted(async () => {
     console.error('显示窗口失败:', e)
   }
 })
+
+// 监听 storage 事件，实时更新过渡效果
+window.addEventListener('storage', (e) => {
+  if (e.key === 'app_config') {
+    loadTransitionConfig()
+  }
+})
+
+// 暴露给外部用于手动刷新
+window.__refreshTransition = loadTransitionConfig
 </script>
 
 <template>
@@ -30,7 +51,11 @@ onMounted(async () => {
     <Sidebar/>
     <div class="main-content">
       <TitleBar/>
-      <router-view/>
+      <router-view v-slot="{ Component }">
+        <transition :name="pageTransition" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
       <!-- 消息通知 -->
       <Toaster v-bind="toasterOptions"/>
       <!-- 关闭提示遮罩层 -->
@@ -157,5 +182,77 @@ select:disabled {
   cursor: not-allowed;
 }
 
+/* 页面过渡效果 */
+/* 淡入淡出 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 左滑 */
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: all 0.25s ease-out;
+}
+.slide-left-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+.slide-left-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+/* 右滑 */
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: all 0.25s ease-out;
+}
+.slide-right-enter-from {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+.slide-right-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+/* 上滑 */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.25s ease-out;
+}
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* 缩放 */
+.zoom-enter-active,
+.zoom-leave-active {
+  transition: all 0.2s ease;
+}
+.zoom-enter-from {
+  opacity: 0;
+  transform: scale(0.95);
+}
+.zoom-leave-to {
+  opacity: 0;
+  transform: scale(1.05);
+}
+
+/* 无效果 */
+.none-enter-active,
+.none-leave-active {
+  transition: none;
+}
 
 </style>

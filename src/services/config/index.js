@@ -3,5 +3,5 @@
  */
 
 export * from './configService'
-export { defaultConfig } from './defaultConfig'
+export { defaultConfig, PAGE_TRANSITION_OPTIONS } from './defaultConfig'
 export { default as configService } from './configService'
