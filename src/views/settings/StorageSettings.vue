@@ -3,9 +3,12 @@ import { ref, reactive, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
 import { useConfigStore, useThemeStore } from '@/stores'
 import { selectDownloadDir, getSystemDownloadDir } from '@/services/download/tauriDownload.js'
-import { getHistory, clearHistory } from '@/services/storage'
-import { clearBilibiliAuth, loadBilibiliAuth } from '@/services/auth/bilibiliAuth'
-import { STORAGE_KEYS } from '@/constants/storage'
+import { clearHistory } from '@/services/storage'
+import { clearBilibiliAuth } from '@/services/auth/bilibiliAuth'
+import { removeFile, FILE_NAMES } from '@/services/storage/fileStorage'
+import { stat, BaseDirectory } from '@tauri-apps/plugin-fs'
+import { appDataDir } from '@tauri-apps/api/path'
+import { invoke } from '@tauri-apps/api/core'
 
 // Stores
 const configStore = useConfigStore()
@@ -37,51 +40,69 @@ const formatBytes = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-// 计算存储项大小
-const getStorageSize = (key) => {
-  const item = localStorage.getItem(key)
-  return item ? new Blob([item]).size : 0
+// 获取文件大小
+const getFileSize = async (filename) => {
+  try {
+    const fileStat = await stat(filename, { baseDir: BaseDirectory.AppData })
+    return fileStat.size
+  } catch {
+    return 0
+  }
 }
 
 // 加载缓存大小
-const loadCacheSize = () => {
-  cacheSize.downloadHistory = formatBytes(getStorageSize(STORAGE_KEYS.DOWNLOAD_HISTORY))
-  cacheSize.bilibiliAuth = formatBytes(getStorageSize('bilibili_auth'))
-  cacheSize.appConfig = formatBytes(getStorageSize(STORAGE_KEYS.APP_CONFIG))
-  cacheSize.theme = formatBytes(
-    getStorageSize(STORAGE_KEYS.THEME) + getStorageSize(STORAGE_KEYS.WINDOW_EFFECT)
-  )
+const loadCacheSize = async () => {
+  const [downloadSize, bilibiliSize, configSize, themeSize] = await Promise.all([
+    getFileSize(FILE_NAMES.DOWNLOAD_HISTORY),
+    getFileSize(FILE_NAMES.BILIBILI_AUTH),
+    getFileSize(FILE_NAMES.CONFIG),
+    getFileSize(FILE_NAMES.THEME)
+  ])
+  
+  cacheSize.downloadHistory = formatBytes(downloadSize)
+  cacheSize.bilibiliAuth = formatBytes(bilibiliSize)
+  cacheSize.appConfig = formatBytes(configSize)
+  cacheSize.theme = formatBytes(themeSize)
 }
 
 // 清除下载历史
-const clearDownloadHistory = () => {
-  clearHistory()
-  loadCacheSize()
+const clearDownloadHistory = async () => {
+  await clearHistory()
+  await loadCacheSize()
   toast.success('下载历史已清除')
 }
 
 // 清除B站登录信息
-const clearBiliAuth = () => {
-  clearBilibiliAuth()
-  loadCacheSize()
+const clearBiliAuth = async () => {
+  await clearBilibiliAuth()
+  await loadCacheSize()
   toast.success('B站登录信息已清除')
 }
 
 // 重置应用配置
-const resetAppConfig = () => {
-  configStore.reset()
-  loadCacheSize()
+const resetAppConfig = async () => {
+  await configStore.reset()
+  await loadCacheSize()
   toast.success('应用配置已重置')
 }
 
 // 清除主题缓存
-const clearThemeCache = () => {
-  localStorage.removeItem(STORAGE_KEYS.THEME)
-  localStorage.removeItem(STORAGE_KEYS.WINDOW_EFFECT)
-  localStorage.removeItem(STORAGE_KEYS.ACCENT_COLOR)
-  themeStore.init() // 重新初始化主题
-  loadCacheSize()
+const clearThemeCache = async () => {
+  await removeFile(FILE_NAMES.THEME)
+  await themeStore.init() // 重新初始化主题
+  await loadCacheSize()
   toast.success('主题缓存已清除')
+}
+
+// 打开缓存目录
+const openCacheDir = async () => {
+  try {
+    const dir = await appDataDir()
+    await invoke('open_folder', { path: dir })
+  } catch (e) {
+    console.error('打开目录失败:', e)
+    toast.error('打开目录失败')
+  }
 }
 
 // 选择下载目录
@@ -129,7 +150,7 @@ const loadForm = async () => {
   }
 
   // 加载缓存大小
-  loadCacheSize()
+  await loadCacheSize()
 }
 
 onMounted(() => {
@@ -192,12 +213,20 @@ onMounted(() => {
     <!-- 缓存清理 -->
     <div class="cache-section">
       <div class="section-header">
-        <svg class="section-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7"/>
-          <ellipse cx="12" cy="7" rx="8" ry="4"/>
-          <path d="M4 12c0 2.21 3.582 4 8 4s8-1.79 8-4"/>
-        </svg>
-        <span class="section-title">缓存</span>
+        <div class="section-header-left">
+          <svg class="section-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7"/>
+            <ellipse cx="12" cy="7" rx="8" ry="4"/>
+            <path d="M4 12c0 2.21 3.582 4 8 4s8-1.79 8-4"/>
+          </svg>
+          <span class="section-title">缓存</span>
+        </div>
+        <button class="btn-open-dir" @click="openCacheDir">
+          <svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+          打开目录
+        </button>
       </div>
       <p class="section-desc">数据库存储配置、登录信息、下载记录等数据。</p>
 
@@ -395,8 +424,34 @@ onMounted(() => {
 .section-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
   margin-bottom: 8px;
+}
+
+.section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-open-dir {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border-primary, #3d3f43);
+  border-radius: 6px;
+  color: var(--text-secondary, #afb1b3);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-open-dir:hover {
+  background: var(--bg-tertiary, #3d3f43);
+  color: var(--text-primary, #ffffff);
+  border-color: var(--accent-color, #4a9eff);
 }
 
 .section-icon {

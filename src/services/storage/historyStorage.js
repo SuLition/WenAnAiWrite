@@ -1,17 +1,39 @@
 /**
  * 历史记录存储服务
- * 管理下载历史的持久化存储
+ * 管理下载历史的持久化存储（使用本地文件存储）
  */
 
-import { getItem, setItem, removeItem } from './localStorage'
-import { STORAGE_KEYS, HISTORY_CONFIG } from '@/constants/storage'
+import { readJsonFile, writeJsonFile, removeFile, FILE_NAMES, migrateDownloadHistoryData } from './fileStorage'
+import { HISTORY_CONFIG } from '@/constants/storage'
+
+// 内存缓存
+let historyCache = null
+let cacheLoaded = false
 
 /**
  * 获取所有历史记录
- * @returns {Array} 历史记录数组
+ * @returns {Promise<Array>} 历史记录数组
  */
-export function getHistory() {
-  return getItem(STORAGE_KEYS.DOWNLOAD_HISTORY, [])
+export async function getHistory() {
+  if (cacheLoaded && historyCache !== null) {
+    return historyCache
+  }
+  
+  // 先尝试迁移旧数据
+  await migrateDownloadHistoryData()
+  
+  const data = await readJsonFile(FILE_NAMES.DOWNLOAD_HISTORY, [])
+  historyCache = data
+  cacheLoaded = true
+  return data
+}
+
+/**
+ * 保存历史记录到文件
+ */
+async function saveHistory(history) {
+  historyCache = history
+  return await writeJsonFile(FILE_NAMES.DOWNLOAD_HISTORY, history)
 }
 
 /**
@@ -22,10 +44,10 @@ export function getHistory() {
  * @param {string} record.url - 视频链接
  * @param {string} record.size - 文件大小
  * @param {string} record.savePath - 保存路径
- * @returns {boolean} 是否成功
+ * @returns {Promise<boolean>} 是否成功
  */
-export function addHistory(record) {
-  const history = getHistory()
+export async function addHistory(record) {
+  const history = await getHistory()
   
   // 生成唯一 ID 和时间戳
   const newRecord = {
@@ -49,42 +71,44 @@ export function addHistory(record) {
     history.splice(HISTORY_CONFIG.MAX_RECORDS)
   }
   
-  return setItem(STORAGE_KEYS.DOWNLOAD_HISTORY, history)
+  return await saveHistory(history)
 }
 
 /**
  * 删除指定历史记录
  * @param {number} id - 记录 ID
- * @returns {boolean} 是否成功
+ * @returns {Promise<boolean>} 是否成功
  */
-export function deleteHistory(id) {
-  const history = getHistory()
+export async function deleteHistory(id) {
+  const history = await getHistory()
   const filtered = history.filter(item => item.id !== id)
-  return setItem(STORAGE_KEYS.DOWNLOAD_HISTORY, filtered)
+  return await saveHistory(filtered)
 }
 
 /**
  * 清空所有历史记录
- * @returns {boolean} 是否成功
+ * @returns {Promise<boolean>} 是否成功
  */
-export function clearHistory() {
-  return removeItem(STORAGE_KEYS.DOWNLOAD_HISTORY)
+export async function clearHistory() {
+  historyCache = []
+  cacheLoaded = true
+  return await removeFile(FILE_NAMES.DOWNLOAD_HISTORY)
 }
 
 /**
  * 更新历史记录状态
  * @param {number} id - 记录 ID
  * @param {Object} updates - 要更新的字段
- * @returns {boolean} 是否成功
+ * @returns {Promise<boolean>} 是否成功
  */
-export function updateHistory(id, updates) {
-  const history = getHistory()
+export async function updateHistory(id, updates) {
+  const history = await getHistory()
   const index = history.findIndex(item => item.id === id)
   
   if (index === -1) return false
   
   history[index] = { ...history[index], ...updates }
-  return setItem(STORAGE_KEYS.DOWNLOAD_HISTORY, history)
+  return await saveHistory(history)
 }
 
 export default {

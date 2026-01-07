@@ -38,7 +38,7 @@ export function useVideoParse() {
     
     if (data.videoStreams && data.videoStreams.length > 0) {
       qualityOptions.value = formatQualityOptions(data.videoStreams);
-      selectedQuality.value = qualityOptions.value[0]?.value || '';
+      selectedQuality.value = qualityOptions.value[0]?.value ?? '';
     }
   };
 
@@ -52,7 +52,7 @@ export function useVideoParse() {
     
     if (data.videoStreams && data.videoStreams.length > 0) {
       qualityOptions.value = formatQualityOptions(data.videoStreams);
-      selectedQuality.value = qualityOptions.value[0]?.value || '';
+      selectedQuality.value = qualityOptions.value[0]?.value ?? '';
     }
   };
 
@@ -66,7 +66,7 @@ export function useVideoParse() {
     
     if (data.videoStreams && data.videoStreams.length > 0) {
       qualityOptions.value = formatQualityOptions(data.videoStreams);
-      selectedQuality.value = qualityOptions.value[0]?.value || '';
+      selectedQuality.value = qualityOptions.value[0]?.value ?? '';
     }
   };
 

@@ -1,11 +1,10 @@
 /**
  * 配置 Store
- * 管理应用配置
+ * 管理应用配置（使用本地文件存储）
  */
 
 import { defineStore } from 'pinia'
-import { getItem, setItem, removeItem } from '@/services/storage/localStorage'
-import { STORAGE_KEYS } from '@/constants/storage'
+import { readJsonFile, writeJsonFile, removeFile, FILE_NAMES, migrateConfigData } from '@/services/storage/fileStorage'
 import { defaultConfig } from '@/services/config/defaultConfig'
 
 /**
@@ -48,11 +47,15 @@ export const useConfigStore = defineStore('config', {
 
   actions: {
     /**
-     * 加载配置
+     * 加载配置（异步）
      */
-    load() {
+    async load() {
       try {
-        const stored = getItem(STORAGE_KEYS.APP_CONFIG)
+        // 先尝试迁移旧数据
+        await migrateConfigData()
+        
+        // 从文件读取配置
+        const stored = await readJsonFile(FILE_NAMES.CONFIG)
         if (stored) {
           this.config = deepMerge(defaultConfig, stored)
         } else {
@@ -66,11 +69,11 @@ export const useConfigStore = defineStore('config', {
     },
 
     /**
-     * 保存配置
+     * 保存配置（异步）
      */
-    save(config) {
+    async save(config) {
       this.config = JSON.parse(JSON.stringify(config))
-      return setItem(STORAGE_KEYS.APP_CONFIG, config)
+      return await writeJsonFile(FILE_NAMES.CONFIG, config)
     },
 
     /**
@@ -83,15 +86,15 @@ export const useConfigStore = defineStore('config', {
     /**
      * 更新指定服务的配置
      */
-    updateServiceConfig(service, serviceConfig) {
+    async updateServiceConfig(service, serviceConfig) {
       this.config[service] = { ...this.config[service], ...serviceConfig }
-      return this.save(this.config)
+      return await this.save(this.config)
     },
 
     /**
      * 更新配置项
      */
-    update(path, value) {
+    async update(path, value) {
       const keys = path.split('.')
       let obj = this.config
       for (let i = 0; i < keys.length - 1; i++) {
@@ -99,15 +102,15 @@ export const useConfigStore = defineStore('config', {
         obj = obj[keys[i]]
       }
       obj[keys[keys.length - 1]] = value
-      return this.save(this.config)
+      return await this.save(this.config)
     },
 
     /**
      * 重置配置为默认值
      */
-    reset() {
+    async reset() {
       this.config = { ...defaultConfig }
-      removeItem(STORAGE_KEYS.APP_CONFIG)
+      await removeFile(FILE_NAMES.CONFIG)
       return this.config
     }
   }

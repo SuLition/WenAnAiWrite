@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "文案助手",
   "version": "0.2.0",
-  "identifier": "com.douyintools.app",
+  "identifier": "com.wenanassistant.app",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:15173",
@@ -12,8 +12,8 @@
   "app": {
     "windows": [
       {
-        "minWidth": 960,
-        "minHeight": 680,
+        "minWidth": 1080,
+        "minHeight": 760,
         "title": "文案助手",
         "label": "main",
         "width": 960,

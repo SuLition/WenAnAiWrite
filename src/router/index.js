@@ -5,6 +5,7 @@ import GeneralSettings from '@/views/settings/GeneralSettings.vue';
 import StorageSettings from '@/views/settings/StorageSettings.vue';
 import AccountSettings from '@/views/settings/AccountSettings.vue';
 import ApiSettings from '@/views/settings/ApiSettings.vue';
+import AboutSettings from '@/views/settings/AboutSettings.vue';
 
 const routes = [
   {
@@ -52,6 +53,12 @@ const routes = [
         name: 'SettingsApi',
         component: ApiSettings,
         meta: { title: 'API设置' }
+      },
+      {
+        path: 'about',
+        name: 'SettingsAbout',
+        component: AboutSettings,
+        meta: { title: '关于' }
       }
     ]
   }

@@ -1,12 +1,12 @@
 <script setup>
-import { ref } from 'vue';
-import { toast } from 'vue-sonner';
+import {ref} from 'vue';
+import {toast} from 'vue-sonner';
 import CustomSelect from '@/components/common/CustomSelect.vue';
-import { AI_MODELS, REWRITE_STYLES, DEFAULT_PROMPTS } from '@/constants/options.js';
-import { recognizeAudioWithData } from '@/services/tencentAsr.js';
-import { rewriteText } from '@/services/aiRewrite.js';
-import { downloadAudioData } from '@/services/download/downloadService.js';
-import { useHistoryStore } from '@/stores';
+import {AI_MODELS, REWRITE_STYLES, DEFAULT_PROMPTS} from '@/constants/options.js';
+import {recognizeAudioWithData} from '@/services/tencentAsr.js';
+import {rewriteText} from '@/services/aiRewrite.js';
+import {downloadAudioData} from '@/services/download/downloadService.js';
+import {useHistoryStore} from '@/stores';
 
 const props = defineProps({
   videoInfo: {
@@ -61,7 +61,8 @@ const handleExtractCopy = async () => {
         throw new Error('未获取到B站音频链接');
       }
 
-      const audioData = await downloadAudioData(audioUrl, 'bilibili', () => {});
+      const audioData = await downloadAudioData(audioUrl, 'bilibili', () => {
+      });
       const MAX_SIZE = 5 * 1024 * 1024;
       const finalData = audioData.length > MAX_SIZE ? audioData.slice(0, MAX_SIZE) : audioData;
 
@@ -73,7 +74,8 @@ const handleExtractCopy = async () => {
       }
       const base64Data = btoa(binary);
 
-      result = await recognizeAudioWithData(base64Data, () => {});
+      result = await recognizeAudioWithData(base64Data, () => {
+      });
     } else if (props.videoInfo.platform === 'douyin') {
       const audioStream = props.videoInfo.audioStream;
       let audioUrl = audioStream?.url;
@@ -88,8 +90,8 @@ const handleExtractCopy = async () => {
       if (isVideoAudio) {
         const extractResponse = await fetch('http://127.0.0.1:3721/extract-audio', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ video_url: audioUrl, platform: 'douyin' })
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({video_url: audioUrl, platform: 'douyin'})
         });
 
         const extractResult = await extractResponse.json();
@@ -99,7 +101,8 @@ const handleExtractCopy = async () => {
 
         base64Data = extractResult.audio_base64;
       } else {
-        const audioData = await downloadAudioData(audioUrl, 'douyin', () => {});
+        const audioData = await downloadAudioData(audioUrl, 'douyin', () => {
+        });
         const MAX_SIZE = 5 * 1024 * 1024;
         const finalData = audioData.length > MAX_SIZE ? audioData.slice(0, MAX_SIZE) : audioData;
 
@@ -112,7 +115,8 @@ const handleExtractCopy = async () => {
         base64Data = btoa(binary);
       }
 
-      result = await recognizeAudioWithData(base64Data, () => {});
+      result = await recognizeAudioWithData(base64Data, () => {
+      });
     } else if (props.videoInfo.platform === 'xiaohongshu') {
       if (!props.videoInfo.isVideo) {
         throw new Error('图文笔记不支持文案提取');
@@ -125,8 +129,8 @@ const handleExtractCopy = async () => {
 
       const extractResponse = await fetch('http://127.0.0.1:3721/extract-audio', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ video_url: videoUrl, platform: 'xiaohongshu' })
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({video_url: videoUrl, platform: 'xiaohongshu'})
       });
 
       const extractResult = await extractResponse.json();
@@ -135,7 +139,8 @@ const handleExtractCopy = async () => {
       }
 
       const base64Data = extractResult.audio_base64;
-      result = await recognizeAudioWithData(base64Data, () => {});
+      result = await recognizeAudioWithData(base64Data, () => {
+      });
     } else {
       throw new Error('该平台文案提取服务开发中');
     }
@@ -143,7 +148,7 @@ const handleExtractCopy = async () => {
     copyText.value = result || '未识别到语音内容';
 
     if (props.currentHistoryId && result) {
-      await historyStore.update(props.currentHistoryId, { originalText: result });
+      await historyStore.update(props.currentHistoryId, {originalText: result});
     }
 
     toast.success('文案提取完成');
@@ -170,7 +175,7 @@ const handleRewrite = async () => {
     copyText.value = result;
 
     if (props.currentHistoryId) {
-      await historyStore.update(props.currentHistoryId, { rewrittenText: result });
+      await historyStore.update(props.currentHistoryId, {rewrittenText: result});
     }
 
     toast.success('改写完成');
@@ -236,7 +241,6 @@ const handleCopy = () => {
             v-model="copyText"
             class="copy-textarea"
             placeholder="点击右上角按钮提取视频文案..."
-            readonly
         ></textarea>
       </div>
     </div>
@@ -274,8 +278,10 @@ const handleCopy = () => {
 
       <button :disabled="!copyText || isRewriting" class="rewrite-button" @click="handleRewrite">
         <svg v-if="!isRewriting" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
-          <path d="M12 4L8 8L12 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+          <path d="M4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4"
+                stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+          <path d="M12 4L8 8L12 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2"/>
         </svg>
         {{ isRewriting ? '改写中...' : '改写' }}
       </button>
@@ -503,7 +509,11 @@ const handleCopy = () => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

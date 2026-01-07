@@ -1,11 +1,10 @@
 /**
  * 主题 Store
- * 管理应用的主题、主题色、窗口效果
+ * 管理应用的主题、主题色、窗口效果（使用本地文件存储）
  */
 
 import { defineStore } from 'pinia'
-import { getItem, setItem } from '@/services/storage/localStorage'
-import { STORAGE_KEYS } from '@/constants/storage'
+import { readJsonFile, writeJsonFile, FILE_NAMES, migrateThemeData } from '@/services/storage/fileStorage'
 import { THEME_MODES, DARK_THEME, LIGHT_THEME, ACCENT_COLORS } from '@/constants/theme'
 import { invoke } from '@tauri-apps/api/core'
 
@@ -29,13 +28,34 @@ export const useThemeStore = defineStore('theme', {
 
   actions: {
     /**
+     * 保存主题数据到文件
+     */
+    async _saveThemeData() {
+      const data = {
+        mode: this.mode,
+        windowEffect: this.windowEffect,
+        accentColor: this.accentColor
+      }
+      await writeJsonFile(FILE_NAMES.THEME, data)
+    },
+
+    /**
      * 初始化主题
      */
     async init() {
-      // 从存储加载设置
-      this.mode = getItem(STORAGE_KEYS.THEME, THEME_MODES.DARK)
-      this.windowEffect = getItem(STORAGE_KEYS.WINDOW_EFFECT, 'none')
-      this.accentColor = getItem(STORAGE_KEYS.ACCENT_COLOR, 'blue')
+      // 先尝试迁移旧数据
+      await migrateThemeData()
+      
+      // 从文件加载设置
+      const themeData = await readJsonFile(FILE_NAMES.THEME, {
+        mode: THEME_MODES.DARK,
+        windowEffect: 'none',
+        accentColor: 'blue'
+      })
+      
+      this.mode = themeData.mode || THEME_MODES.DARK
+      this.windowEffect = themeData.windowEffect || 'none'
+      this.accentColor = themeData.accentColor || 'blue'
 
       // 计算实际主题
       const actualTheme = this.mode === THEME_MODES.SYSTEM
@@ -61,7 +81,7 @@ export const useThemeStore = defineStore('theme', {
      */
     async setTheme(mode) {
       this.mode = mode
-      setItem(STORAGE_KEYS.THEME, mode)
+      await this._saveThemeData()
 
       const actualTheme = mode === THEME_MODES.SYSTEM
         ? this._getSystemTheme()
@@ -84,13 +104,13 @@ export const useThemeStore = defineStore('theme', {
     /**
      * 设置主题色
      */
-    setAccentColor(colorKey) {
+    async setAccentColor(colorKey) {
       if (!ACCENT_COLORS[colorKey]) {
         console.warn('[Theme] 无效的主题色:', colorKey)
         return
       }
       this.accentColor = colorKey
-      setItem(STORAGE_KEYS.ACCENT_COLOR, colorKey)
+      await this._saveThemeData()
       this._applyAccentColorToDOM(colorKey)
     },
 
@@ -99,7 +119,7 @@ export const useThemeStore = defineStore('theme', {
      */
     async setWindowEffect(effect) {
       this.windowEffect = effect
-      setItem(STORAGE_KEYS.WINDOW_EFFECT, effect)
+      await this._saveThemeData()
       await this._applyWindowEffect(effect, this.appliedTheme === THEME_MODES.DARK)
     },
 

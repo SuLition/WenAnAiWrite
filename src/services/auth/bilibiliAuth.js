@@ -1,11 +1,14 @@
 /**
  * B站登录授权服务
- * 实现二维码登录、Cookie管理和持久化存储
+ * 实现二维码登录、Cookie管理和持久化存储（使用本地文件存储）
  */
 
 import { SERVICE_URL } from '../api/config.js'
+import { readJsonFile, writeJsonFile, removeFile, FILE_NAMES, migrateBilibiliAuthData } from '../storage/fileStorage.js'
 
-const BILIBILI_AUTH_KEY = 'bilibili_auth'
+// 内存缓存，避免频繁读文件
+let authCache = null
+let cacheLoaded = false
 
 /**
  * 调用代理 API
@@ -120,7 +123,7 @@ function getStatusMessage(code) {
  * @returns {Promise<object>} 用户信息
  */
 export async function getUserInfo() {
-  const auth = loadBilibiliAuth()
+  const auth = await loadBilibiliAuth()
   if (!auth || !auth.cookies?.SESSDATA) {
     return null
   }
@@ -139,7 +142,7 @@ export async function getUserInfo() {
   if (data.code !== 0) {
     // 登录已失效
     if (data.code === -101) {
-      clearBilibiliAuth()
+      await clearBilibiliAuth()
       return null
     }
     throw new Error(data.message || '获取用户信息失败')
@@ -171,14 +174,18 @@ function buildCookieString(cookies) {
  * 保存B站登录信息
  * @param {object} authData - 登录信息
  */
-export function saveBilibiliAuth(authData) {
+export async function saveBilibiliAuth(authData) {
   try {
     const data = {
       ...authData,
       savedAt: Date.now()
     }
-    localStorage.setItem(BILIBILI_AUTH_KEY, JSON.stringify(data))
-    return true
+    const success = await writeJsonFile(FILE_NAMES.BILIBILI_AUTH, data)
+    if (success) {
+      authCache = data
+      cacheLoaded = true
+    }
+    return success
   } catch (e) {
     console.error('保存B站登录信息失败:', e)
     return false
@@ -187,13 +194,23 @@ export function saveBilibiliAuth(authData) {
 
 /**
  * 加载B站登录信息
- * @returns {object|null} 登录信息
+ * @returns {Promise<object|null>} 登录信息
  */
-export function loadBilibiliAuth() {
+export async function loadBilibiliAuth() {
   try {
-    const stored = localStorage.getItem(BILIBILI_AUTH_KEY)
-    if (!stored) return null
-    return JSON.parse(stored)
+    // 如果有缓存，直接返回
+    if (cacheLoaded && authCache !== null) {
+      return authCache
+    }
+    
+    // 先尝试迁移旧数据
+    await migrateBilibiliAuthData()
+    
+    // 从文件读取
+    const data = await readJsonFile(FILE_NAMES.BILIBILI_AUTH)
+    authCache = data
+    cacheLoaded = true
+    return data
   } catch (e) {
     console.error('加载B站登录信息失败:', e)
     return null
@@ -203,44 +220,46 @@ export function loadBilibiliAuth() {
 /**
  * 清除B站登录信息
  */
-export function clearBilibiliAuth() {
-  localStorage.removeItem(BILIBILI_AUTH_KEY)
+export async function clearBilibiliAuth() {
+  await removeFile(FILE_NAMES.BILIBILI_AUTH)
+  authCache = null
+  cacheLoaded = true
 }
 
 /**
  * 检查是否已登录
- * @returns {boolean}
+ * @returns {Promise<boolean>}
  */
-export function isLoggedIn() {
-  const auth = loadBilibiliAuth()
+export async function isLoggedIn() {
+  const auth = await loadBilibiliAuth()
   return !!(auth && auth.cookies?.SESSDATA)
 }
 
 /**
  * 获取登录Cookie用于API请求
- * @returns {string} Cookie字符串
+ * @returns {Promise<string>} Cookie字符串
  */
-export function getAuthCookie() {
-  const auth = loadBilibiliAuth()
+export async function getAuthCookie() {
+  const auth = await loadBilibiliAuth()
   if (!auth || !auth.cookies) return ''
   return buildCookieString(auth.cookies)
 }
 
 /**
  * 获取SESSDATA
- * @returns {string}
+ * @returns {Promise<string>}
  */
-export function getSessData() {
-  const auth = loadBilibiliAuth()
+export async function getSessData() {
+  const auth = await loadBilibiliAuth()
   return auth?.cookies?.SESSDATA || ''
 }
 
 /**
  * 获取bili_jct (CSRF Token)
- * @returns {string}
+ * @returns {Promise<string>}
  */
-export function getCsrfToken() {
-  const auth = loadBilibiliAuth()
+export async function getCsrfToken() {
+  const auth = await loadBilibiliAuth()
   return auth?.cookies?.bili_jct || ''
 }
 

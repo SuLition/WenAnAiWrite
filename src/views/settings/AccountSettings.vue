@@ -24,7 +24,7 @@ const bilibiliLoginState = reactive({
 
 // 加载B站登录状态
 const loadBilibiliLoginState = async () => {
-  const auth = loadBilibiliAuth()
+  const auth = await loadBilibiliAuth()
   if (auth && auth.cookies?.SESSDATA) {
     bilibiliLoginState.isLoggedIn = true
     bilibiliLoginState.status = 'success'
@@ -84,7 +84,9 @@ const startPolling = () => {
           bilibiliLoginState.statusText = '登录成功'
           bilibiliLoginState.isLoggedIn = true
           bilibiliLoginState.qrcode = null
-          saveBilibiliAuth({ cookies: result.cookies })
+          saveBilibiliAuth({ cookies: result.cookies }).then(() => {
+            // 保存完成后获取用户信息
+          })
           try {
             const userInfo = await getUserInfo()
             bilibiliLoginState.userInfo = userInfo
@@ -122,8 +124,8 @@ const stopPolling = () => {
 }
 
 // 退出b站登录
-const logoutBilibili = () => {
-  clearBilibiliAuth()
+const logoutBilibili = async () => {
+  await clearBilibiliAuth()
   bilibiliLoginState.isLoggedIn = false
   bilibiliLoginState.status = 'idle'
   bilibiliLoginState.statusText = ''

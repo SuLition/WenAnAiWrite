@@ -61,7 +61,13 @@ export async function parseBilibiliVideo(url, cookie = null) {
   }
 
   // 如果没有传入cookie，尝试从登录系统获取
-  const authCookie = cookie || (isLoggedIn() ? getAuthCookie() : '')
+  let authCookie = cookie || ''
+  if (!authCookie) {
+    const loggedIn = await isLoggedIn()
+    if (loggedIn) {
+      authCookie = await getAuthCookie()
+    }
+  }
   
   console.log('='+'='.repeat(59))
   console.log('[bilibiliApi] B站解析请求')
