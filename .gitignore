@@ -44,3 +44,4 @@ xiaohongshu.json
 
 # Tauri
 src-tauri/gen/schemas/
+/build.bat
