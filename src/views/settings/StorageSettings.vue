@@ -1,11 +1,15 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
-import { loadConfig, saveConfig, resetConfig } from '@/services/config'
+import { useConfigStore, useThemeStore } from '@/stores'
 import { selectDownloadDir, getSystemDownloadDir } from '@/services/download/tauriDownload.js'
 import { getHistory, clearHistory } from '@/services/storage'
 import { clearBilibiliAuth, loadBilibiliAuth } from '@/services/auth/bilibiliAuth'
 import { STORAGE_KEYS } from '@/constants/storage'
+
+// Stores
+const configStore = useConfigStore()
+const themeStore = useThemeStore()
 
 // 系统默认下载路径
 const defaultDownloadPath = ref('')
@@ -65,7 +69,7 @@ const clearBiliAuth = () => {
 
 // 重置应用配置
 const resetAppConfig = () => {
-  resetConfig()
+  configStore.reset()
   loadCacheSize()
   toast.success('应用配置已重置')
 }
@@ -74,6 +78,8 @@ const resetAppConfig = () => {
 const clearThemeCache = () => {
   localStorage.removeItem(STORAGE_KEYS.THEME)
   localStorage.removeItem(STORAGE_KEYS.WINDOW_EFFECT)
+  localStorage.removeItem(STORAGE_KEYS.ACCENT_COLOR)
+  themeStore.init() // 重新初始化主题
   loadCacheSize()
   toast.success('主题缓存已清除')
 }
@@ -84,9 +90,8 @@ const selectDownloadPath = async () => {
     const selected = await selectDownloadDir()
     if (selected) {
       form.download.savePath = selected
-      // 自动保存
-      const config = loadConfig()
-      saveConfig({ ...config, download: { ...config.download, savePath: selected } })
+      // 通过 store 保存
+      configStore.update('download.savePath', selected)
     }
   } catch (e) {
     console.error('选择目录失败:', e)
@@ -96,26 +101,24 @@ const selectDownloadPath = async () => {
 // 重置下载路径为默认
 const resetDownloadPath = () => {
   form.download.savePath = ''
-  // 自动保存
-  const config = loadConfig()
-  saveConfig({ ...config, download: { ...config.download, savePath: '' } })
+  // 通过 store 保存
+  configStore.update('download.savePath', '')
 }
 
 // 修改历史记录最大数量
 const onMaxRecordsChange = () => {
-  const config = loadConfig()
-  saveConfig({ ...config, history: { ...config.history, maxRecords: form.history.maxRecords } })
+  configStore.update('history.maxRecords', form.history.maxRecords)
   toast.success('已保存')
 }
 
 // 加载配置
 const loadForm = async () => {
-  const config = loadConfig()
-  if (config.download) {
-    Object.assign(form.download, config.download)
+  // 从 store 获取配置
+  if (configStore.download) {
+    Object.assign(form.download, configStore.download)
   }
-  if (config.history) {
-    Object.assign(form.history, config.history)
+  if (configStore.history) {
+    Object.assign(form.history, configStore.history)
   }
 
   // 加载系统默认下载路径

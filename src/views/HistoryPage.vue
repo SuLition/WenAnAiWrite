@@ -1,29 +1,25 @@
 <script setup>
-import {ref, onMounted} from 'vue';
+import {onMounted} from 'vue';
 import {useRouter} from 'vue-router';
-import {getParseHistory, deleteParseHistory, clearParseHistory} from '@/services/storage';
+import {useHistoryStore} from '@/stores';
+import {storeToRefs} from 'pinia';
 import {getPlatformName, getPlatformColor} from '@/constants/platforms';
 import {toast} from 'vue-sonner';
 
 const router = useRouter();
-const historyList = ref([]);
-const loading = ref(true);
+
+// Store
+const historyStore = useHistoryStore();
+const { list: historyList, loading } = storeToRefs(historyStore);
 
 // 加载历史记录
 onMounted(async () => {
-  await loadHistory();
+  await historyStore.load();
 });
-
-const loadHistory = async () => {
-  loading.value = true;
-  historyList.value = await getParseHistory();
-  loading.value = false;
-};
 
 // 删除记录
 const handleDelete = async (id) => {
-  await deleteParseHistory(id);
-  historyList.value = historyList.value.filter(item => item.id !== id);
+  await historyStore.delete(id);
   toast.success('已删除');
 };
 
@@ -63,8 +59,7 @@ const hasText = (item) => {
 // 清空所有记录
 const clearAll = async () => {
   if (confirm('确定要清空所有历史记录吗？')) {
-    await clearParseHistory();
-    historyList.value = [];
+    await historyStore.clear();
     toast.success('已清空');
   }
 };

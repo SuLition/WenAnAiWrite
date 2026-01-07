@@ -1,38 +1,36 @@
 <script setup>
-import {onMounted, ref, watch, computed} from 'vue'
+import {onMounted, ref, computed} from 'vue'
 import {Toaster} from 'vue-sonner'
 import CloseMask from "./components/common/CloseMask.vue";
 import {toasterOptions} from "./utils/index.js";
 import TitleBar from "./components/common/TitleBar.vue";
 import Sidebar from "./components/common/Sidebar.vue";
 import { Updater } from "./components/common";
-import {initTheme, useAppliedTheme} from './services/theme'
+import { useThemeStore, useConfigStore, useUpdateStore } from './stores'
 import {getCurrentWindow} from '@tauri-apps/api/window'
-import {loadConfig} from './services/config'
+
+// Stores
+const themeStore = useThemeStore()
+const configStore = useConfigStore()
+const updateStore = useUpdateStore()
 
 // 当前主题
-const appliedTheme = useAppliedTheme()
-const toasterTheme = computed(() => appliedTheme.value === 'dark' ? 'dark' : 'light')
+const toasterTheme = computed(() => themeStore.appliedTheme === 'dark' ? 'dark' : 'light')
 
 // 页面过渡效果
-const pageTransition = ref('fade')
+const pageTransition = computed(() => configStore.appearance.pageTransition || 'fade')
 
-// 更新组件引用
-const updaterRef = ref(null)
-
-// 加载过渡效果配置
-const loadTransitionConfig = () => {
-  const config = loadConfig()
-  pageTransition.value = config.appearance?.pageTransition || 'fade'
-}
-
-// 初始化主题并显示窗口
+// 初始化并显示窗口
 onMounted(async () => {
   try {
-    await initTheme()
-    loadTransitionConfig()
+    // 加载配置
+    configStore.load()
+    // 初始化主题
+    await themeStore.init()
+    // 自动检查更新
+    updateStore.autoCheck()
   } catch (e) {
-    console.error('初始化主题失败:', e)
+    console.error('初始化失败:', e)
   }
   // 确保无论如何都显示窗口
   try {
@@ -42,21 +40,6 @@ onMounted(async () => {
     console.error('显示窗口失败:', e)
   }
 })
-
-// 监听 storage 事件，实时更新过渡效果
-window.addEventListener('storage', (e) => {
-  if (e.key === 'app_config') {
-    loadTransitionConfig()
-  }
-})
-
-// 暴露给外部用于手动刷新
-window.__refreshTransition = loadTransitionConfig
-
-// 暴露检查更新方法给设置页面调用
-window.__checkUpdate = async (showNoUpdate) => {
-  return await updaterRef.value?.checkUpdate(showNoUpdate)
-}
 </script>
 
 <template>
@@ -74,7 +57,7 @@ window.__checkUpdate = async (showNoUpdate) => {
       <!-- 关闭提示遮罩层 -->
       <CloseMask/>
       <!-- 更新组件 -->
-      <Updater ref="updaterRef" />
+      <Updater />
     </div>
   </div>
 </template>

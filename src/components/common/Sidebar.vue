@@ -1,13 +1,14 @@
 <script setup>
-import {ref, computed} from 'vue';
+import {computed} from 'vue';
 import {useRouter, useRoute} from 'vue-router';
-import {toggleTheme, useAppliedTheme} from '@/services/theme';
+import {useThemeStore} from '@/stores';
 
 const router = useRouter();
 const route = useRoute();
 
-const appliedTheme = useAppliedTheme();
-const isDark = computed(() => appliedTheme.value === 'dark');
+// Store
+const themeStore = useThemeStore();
+const isDark = computed(() => themeStore.isDark);
 
 // 判断菜单是否激活（支持子路由匹配）
 const isActive = (path) => {
@@ -32,7 +33,7 @@ const handleMenuClick = (path) => {
 };
 
 const handleToggleTheme = () => {
-  toggleTheme();
+  themeStore.toggleTheme();
 };
 </script>
 

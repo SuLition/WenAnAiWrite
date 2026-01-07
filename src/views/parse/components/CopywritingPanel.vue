@@ -6,7 +6,7 @@ import { AI_MODELS, REWRITE_STYLES, DEFAULT_PROMPTS } from '@/constants/options.
 import { recognizeAudioWithData } from '@/services/tencentAsr.js';
 import { rewriteText } from '@/services/aiRewrite.js';
 import { downloadAudioData } from '@/services/download/downloadService.js';
-import { updateParseHistory } from '@/services/storage/parseHistoryStorage.js';
+import { useHistoryStore } from '@/stores';
 
 const props = defineProps({
   videoInfo: {
@@ -26,6 +26,9 @@ const rewriteStyle = ref('professional');
 const customPrompt = ref(DEFAULT_PROMPTS['professional'] || '');
 const isRewriting = ref(false);
 const isExtracting = ref(false);
+
+// Store
+const historyStore = useHistoryStore();
 
 const onStyleChange = (newStyle) => {
   customPrompt.value = DEFAULT_PROMPTS[newStyle] || '';
@@ -140,7 +143,7 @@ const handleExtractCopy = async () => {
     copyText.value = result || '未识别到语音内容';
 
     if (props.currentHistoryId && result) {
-      await updateParseHistory(props.currentHistoryId, { originalText: result });
+      await historyStore.update(props.currentHistoryId, { originalText: result });
     }
 
     toast.success('文案提取完成');
@@ -167,7 +170,7 @@ const handleRewrite = async () => {
     copyText.value = result;
 
     if (props.currentHistoryId) {
-      await updateParseHistory(props.currentHistoryId, { rewrittenText: result });
+      await historyStore.update(props.currentHistoryId, { rewrittenText: result });
     }
 
     toast.success('改写完成');

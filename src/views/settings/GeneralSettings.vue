@@ -1,10 +1,15 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
-import { loadConfig, saveConfig, PAGE_TRANSITION_OPTIONS } from '@/services/config'
-import { setWindowEffect, useWindowEffect, setAccentColor, useAccentColor } from '@/services/theme'
+import { useThemeStore, useConfigStore, useUpdateStore } from '@/stores'
+import { PAGE_TRANSITION_OPTIONS } from '@/services/config'
 import { ACCENT_COLOR_OPTIONS } from '@/constants/theme'
 import CustomSelect from '@/components/common/CustomSelect.vue'
+
+// Stores
+const themeStore = useThemeStore()
+const configStore = useConfigStore()
+const updateStore = useUpdateStore()
 
 // 窗口效果选项
 const WINDOW_EFFECT_OPTIONS = [
@@ -12,87 +17,61 @@ const WINDOW_EFFECT_OPTIONS = [
   { value: 'mica', label: 'Mica (云母)' }
 ]
 
-// 窗口效果
-const windowEffect = useWindowEffect()
-
-// 主题色
-const accentColor = useAccentColor()
-
-// 自动检查更新
-const autoCheckUpdate = ref(true)
-
 // 检查中状态
 const isChecking = ref(false)
 
-// 表单数据
-const form = reactive({
-  appearance: { pageTransition: 'fade' }
+// 计算属性
+const windowEffect = computed({
+  get: () => themeStore.windowEffect,
+  set: (val) => themeStore.setWindowEffect(val)
+})
+
+const accentColor = computed(() => themeStore.accentColor)
+
+const pageTransition = computed({
+  get: () => configStore.appearance.pageTransition || 'fade',
+  set: (val) => {
+    configStore.update('appearance.pageTransition', val)
+  }
+})
+
+const autoCheckUpdate = computed({
+  get: () => configStore.config.update?.autoCheck ?? true,
+  set: (val) => {
+    configStore.update('update.autoCheck', val)
+    toast.success(val ? '已开启自动检查更新' : '已关闭自动检查更新')
+  }
 })
 
 // 切换窗口效果
 const onWindowEffectChange = async (effect) => {
-  await setWindowEffect(effect)
+  await themeStore.setWindowEffect(effect)
   toast.success(`窗口效果已切换为 ${WINDOW_EFFECT_OPTIONS.find(o => o.value === effect)?.label || effect}`)
 }
 
 // 切换主题色
 const onAccentColorChange = (colorKey) => {
-  setAccentColor(colorKey)
+  themeStore.setAccentColor(colorKey)
   const color = ACCENT_COLOR_OPTIONS.find(o => o.value === colorKey)
   toast.success(`主题色已切换为 ${color?.label || colorKey}`)
 }
 
 // 页面过渡效果变更
 const onTransitionChange = (value) => {
-  form.appearance.pageTransition = value
-  // 立即保存
-  const config = loadConfig()
-  saveConfig({ ...config, appearance: { ...config.appearance, pageTransition: value } })
-  // 通知 App.vue 刷新过渡效果
-  if (window.__refreshTransition) {
-    window.__refreshTransition()
-  }
-}
-
-// 加载配置
-const loadForm = () => {
-  const config = loadConfig()
-  if (config.appearance) {
-    Object.assign(form.appearance, config.appearance)
-  }
-  // 加载自动检查更新设置
-  autoCheckUpdate.value = config.update?.autoCheck ?? true
-}
-
-// 切换自动检查更新
-const onAutoCheckChange = () => {
-  const config = loadConfig()
-  saveConfig({
-    ...config,
-    update: { ...config.update, autoCheck: autoCheckUpdate.value }
-  })
-  toast.success(autoCheckUpdate.value ? '已开启自动检查更新' : '已关闭自动检查更新')
+  configStore.update('appearance.pageTransition', value)
 }
 
 // 手动检查更新
 const checkUpdateNow = async () => {
   if (isChecking.value) return
   
-  if (window.__checkUpdate) {
-    isChecking.value = true
-    try {
-      await window.__checkUpdate(true)
-    } finally {
-      isChecking.value = false
-    }
-  } else {
-    toast.error('更新功能未初始化')
+  isChecking.value = true
+  try {
+    await updateStore.checkUpdate(true)
+  } finally {
+    isChecking.value = false
   }
 }
-
-onMounted(() => {
-  loadForm()
-})
 </script>
 
 <template>
@@ -146,7 +125,7 @@ onMounted(() => {
           </svg>
           <span class="setting-label">页面过渡</span>
         </div>
-        <CustomSelect v-model="form.appearance.pageTransition" :options="PAGE_TRANSITION_OPTIONS"
+        <CustomSelect v-model="pageTransition" :options="PAGE_TRANSITION_OPTIONS"
                       class="setting-select" @change="onTransitionChange"/>
       </div>
       <p class="setting-hint">切换页面时的动画效果</p>
@@ -164,7 +143,7 @@ onMounted(() => {
           <span class="setting-label">自动检查更新</span>
         </div>
         <label class="switch">
-          <input type="checkbox" v-model="autoCheckUpdate" @change="onAutoCheckChange">
+          <input type="checkbox" v-model="autoCheckUpdate">
           <span class="slider"></span>
         </label>
       </div>

@@ -6,7 +6,7 @@ import { toast } from 'vue-sonner';
 import { parseVideo as parseBilibiliVideoApi } from '@/services/api/bilibiliApi.js';
 import { parseVideo as parseDouyinVideoApi } from '@/services/api/douyinApi.js';
 import { parseVideo as parseXiaohongshuVideoApi } from '@/services/api/xiaohongshuApi.js';
-import { addParseHistory } from '@/services/storage/parseHistoryStorage.js';
+import { useHistoryStore } from '@/stores';
 import { extractUrlFromText, detectPlatform } from '@/utils/urlParser.js';
 import {
   formatBilibiliData,
@@ -23,6 +23,9 @@ export function useVideoParse() {
   const qualityOptions = ref([]);
   const selectedQuality = ref('');
   const currentHistoryId = ref(null);
+  
+  // Store
+  const historyStore = useHistoryStore();
 
   /**
    * 解析B站视频
@@ -112,7 +115,7 @@ export function useVideoParse() {
       if (videoInfo.value) {
         const videoId = videoInfo.value.bvid || videoInfo.value.awemeId || videoInfo.value.noteId || '';
         
-        const historyId = await addParseHistory({
+        const historyId = await historyStore.add({
           cover: videoInfo.value.cover || '',
           title: videoInfo.value.title || '',
           platform: videoInfo.value.platform || platform.value,

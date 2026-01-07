@@ -1,103 +1,16 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { check } from '@tauri-apps/plugin-updater'
-import { relaunch } from '@tauri-apps/plugin-process'
-import { toast } from 'vue-sonner'
-import { loadConfig } from '@/services/config'
+import { useUpdateStore } from '@/stores'
+import { storeToRefs } from 'pinia'
 
-// 状态
-const visible = ref(false)
-const state = reactive({
-  update: null,
-  downloading: false,
-  progress: 0
-})
-
-// 暴露方法给父组件
-defineExpose({ checkUpdate })
-
-/**
- * 检查更新
- * @param {boolean} showNoUpdate - 是否在无更新时显示提示
- */
-async function checkUpdate(showNoUpdate = false) {
-  try {
-    console.log('[更新] 开始检查更新...')
-    const update = await check()
-    
-    if (update) {
-      console.log('[更新] 发现新版本:', update.version)
-      state.update = update
-      visible.value = true
-    } else if (showNoUpdate) {
-      toast.success('已是最新版本')
-    }
-  } catch (e) {
-    console.error('[更新] 检查失败:', e)
-    if (showNoUpdate) {
-      toast.error('检查更新失败，请稍后重试')
-    }
-  }
-}
-
-/**
- * 执行更新
- */
-async function doUpdate() {
-  if (!state.update) return
-  
-  state.downloading = true
-  let downloaded = 0
-  let total = 0
-  
-  try {
-    await state.update.downloadAndInstall((event) => {
-      if (event.event === 'Started') {
-        total = event.data.contentLength || 0
-        console.log('[更新] 开始下载，总大小:', total)
-      } else if (event.event === 'Progress') {
-        downloaded += event.data.chunkLength
-        state.progress = total > 0 ? (downloaded / total) * 100 : 0
-        console.log('[更新] 下载进度:', state.progress.toFixed(1) + '%')
-      } else if (event.event === 'Finished') {
-        console.log('[更新] 下载完成')
-      }
-    })
-    
-    toast.success('更新完成，即将重启...')
-    setTimeout(async () => {
-      await relaunch()
-    }, 1000)
-  } catch (e) {
-    console.error('[更新] 下载失败:', e)
-    toast.error('更新失败: ' + (e.message || e))
-    state.downloading = false
-  }
-}
-
-/**
- * 关闭弹窗
- */
-function close() {
-  if (!state.downloading) {
-    visible.value = false
-  }
-}
-
-// 启动时自动检查
-onMounted(() => {
-  const config = loadConfig()
-  if (config.update?.autoCheck) {
-    // 延迟检查，避免影响启动速度
-    setTimeout(() => checkUpdate(false), 3000)
-  }
-})
+// Store
+const updateStore = useUpdateStore()
+const { visible, update, downloading, progress } = storeToRefs(updateStore)
 </script>
 
 <template>
   <teleport to="body">
     <transition name="fade">
-      <div v-if="visible" class="updater-overlay" @click.self="close">
+      <div v-if="visible" class="updater-overlay" @click.self="updateStore.close">
         <div class="updater-dialog">
           <h2 class="updater-title">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -110,35 +23,35 @@ onMounted(() => {
           
           <div class="updater-content">
             <div class="version-info">
-              <span class="version-badge">v{{ state.update?.version }}</span>
-              <span v-if="state.update?.date" class="version-date">
-                {{ new Date(state.update.date).toLocaleDateString() }}
+              <span class="version-badge">v{{ update?.version }}</span>
+              <span v-if="update?.date" class="version-date">
+                {{ new Date(update.date).toLocaleDateString() }}
               </span>
             </div>
             
-            <div class="changelog" v-if="state.update?.body">
-              <pre>{{ state.update.body }}</pre>
+            <div class="changelog" v-if="update?.body">
+              <pre>{{ update.body }}</pre>
             </div>
             
-            <div v-if="state.downloading" class="progress-section">
+            <div v-if="downloading" class="progress-section">
               <div class="progress-bar">
-                <div class="progress-fill" :style="{ width: state.progress + '%' }"></div>
+                <div class="progress-fill" :style="{ width: progress + '%' }"></div>
               </div>
-              <span class="progress-text">{{ state.progress.toFixed(1) }}%</span>
+              <span class="progress-text">{{ progress.toFixed(1) }}%</span>
             </div>
           </div>
           
           <div class="updater-actions">
             <button 
               class="btn btn-primary" 
-              :class="{ 'btn-progress': state.downloading }" 
-              :style="state.downloading ? { '--progress': state.progress + '%' } : {}"
-              @click="doUpdate" 
-              :disabled="state.downloading"
+              :class="{ 'btn-progress': downloading }" 
+              :style="downloading ? { '--progress': progress + '%' } : {}"
+              @click="updateStore.doUpdate" 
+              :disabled="downloading"
             >
-              {{ state.downloading ? state.progress.toFixed(0) + '%' : '立即更新' }}
+              {{ downloading ? progress.toFixed(0) + '%' : '立即更新' }}
             </button>
-            <button class="btn btn-secondary" @click="close" :disabled="state.downloading">
+            <button class="btn btn-secondary" @click="updateStore.close" :disabled="downloading">
               稍后更新
             </button>
           </div>

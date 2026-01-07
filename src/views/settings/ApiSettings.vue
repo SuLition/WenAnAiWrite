@@ -1,6 +1,10 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { loadConfig, saveConfig, checkConfig } from '@/services/config'
+import { useConfigStore } from '@/stores'
+import { checkConfig } from '@/services/config'
+
+// Store
+const configStore = useConfigStore()
 
 // 表单数据
 const form = reactive({
@@ -22,7 +26,7 @@ const configStatus = ref({
 
 // 加载配置
 const loadForm = () => {
-  const config = loadConfig()
+  const config = configStore.config
   Object.keys(form).forEach(key => {
     if (config[key]) {
       Object.assign(form[key], config[key])
@@ -33,8 +37,12 @@ const loadForm = () => {
 
 // 失去焦点时保存配置
 const onBlurSave = () => {
-  const config = loadConfig()
-  saveConfig({ ...config, ...form })
+  // 更新所有 API 配置
+  Object.keys(form).forEach(key => {
+    Object.keys(form[key]).forEach(subKey => {
+      configStore.update(`${key}.${subKey}`, form[key][subKey])
+    })
+  })
   configStatus.value = checkConfig()
 }
 
