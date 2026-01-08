@@ -1,17 +1,17 @@
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
-import { useConfigStore } from '@/stores'
+import {ref, reactive, onMounted, computed} from 'vue'
+import {useConfigStore} from '@/stores'
 
 // Store
 const configStore = useConfigStore()
 
 // 表单数据
 const form = reactive({
-  tencentAsr: { secretId: '', secretKey: '' },
-  doubao: { apiKey: '', model: 'doubao-seed-1-6-251015' },
-  deepseek: { apiKey: '', model: 'deepseek-chat' },
-  qianwen: { apiKey: '', model: 'qwen-turbo' },
-  hunyuan: { secretId: '', secretKey: '' }
+  tencentAsr: {secretId: '', secretKey: ''},
+  doubao: {apiKey: '', model: 'doubao-seed-1-6-251015'},
+  deepseek: {apiKey: '', model: 'deepseek-chat'},
+  qianwen: {apiKey: '', model: 'qwen-turbo'},
+  hunyuan: {secretId: '', secretKey: ''}
 })
 
 // 配置状态 - 直接从 configStore 计算
@@ -176,20 +176,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.settings-panel {
-  animation: fadeIn var(--transition-fast, 200ms) var(--easing-ease, ease);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 .setting-group {
   padding-bottom: 16px;

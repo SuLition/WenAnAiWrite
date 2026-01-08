@@ -1,15 +1,21 @@
 <script setup>
-import {useRoute} from 'vue-router'
+import { useRoute } from 'vue-router'
+import { computed } from 'vue'
+import { useConfigStore } from '@/stores'
 
 const route = useRoute()
+const configStore = useConfigStore()
+
+// 页面过渡效果
+const pageTransition = computed(() => configStore.appearance.pageTransition || 'fade')
 
 // 子导航配置
 const navItems = [
-  {id: 'general', label: '通用', icon: 'settings', path: '/settings/general'},
-  {id: 'storage', label: '存储', icon: 'folder', path: '/settings/storage'},
-  {id: 'account', label: '账号', icon: 'user', path: '/settings/account'},
-  {id: 'api', label: 'API', icon: 'key', path: '/settings/api'},
-  {id: 'about', label: '关于', icon: 'info', path: '/settings/about'}
+  { id: 'general', label: '通用', icon: 'settings', path: '/settings/general' },
+  { id: 'storage', label: '存储', icon: 'folder', path: '/settings/storage' },
+  { id: 'account', label: '账号', icon: 'user', path: '/settings/account' },
+  { id: 'api', label: 'API', icon: 'key', path: '/settings/api' },
+  { id: 'about', label: '关于', icon: 'info', path: '/settings/about' }
 ]
 
 // 判断导航是否激活
@@ -30,7 +36,11 @@ const isActive = (path) => route.path === path
       </div>
 
       <!-- 子路由内容 -->
-      <router-view/>
+      <router-view v-slot="{ Component }">
+        <transition :name="pageTransition" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </div>
 
     <!-- 右侧子导航 -->

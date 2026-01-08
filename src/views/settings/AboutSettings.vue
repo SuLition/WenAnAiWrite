@@ -112,20 +112,6 @@ const openGitHub = async () => {
 </template>
 
 <style scoped>
-.settings-panel {
-  animation: fadeIn var(--transition-fast, 200ms) var(--easing-ease, ease);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 /* 头部 */
 .about-header {

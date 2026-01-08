@@ -1,15 +1,15 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { toast } from 'vue-sonner'
-import { useConfigStore } from '@/stores'
-import { selectDownloadDir, getSystemDownloadDir } from '@/services/download/tauriDownload.js'
-import { clearHistory } from '@/services/storage'
-import { clearParseHistory as clearParseHistoryStorage } from '@/services/storage/parseHistoryStorage'
-import { clearBilibiliAuth } from '@/services/auth/bilibiliAuth'
-import { removeFile, FILE_NAMES } from '@/services/storage/fileStorage'
-import { stat } from '@tauri-apps/plugin-fs'
-import { appDataDir } from '@tauri-apps/api/path'
-import { invoke } from '@tauri-apps/api/core'
+import {ref, reactive, onMounted} from 'vue'
+import {toast} from 'vue-sonner'
+import {useConfigStore} from '@/stores'
+import {selectDownloadDir, getSystemDownloadDir} from '@/services/download/tauriDownload.js'
+import {clearHistory} from '@/services/storage'
+import {clearParseHistory as clearParseHistoryStorage} from '@/services/storage/parseHistoryStorage'
+import {clearBilibiliAuth} from '@/services/auth/bilibiliAuth'
+import {removeFile, FILE_NAMES} from '@/services/storage/fileStorage'
+import {stat} from '@tauri-apps/plugin-fs'
+import {appDataDir} from '@tauri-apps/api/path'
+import {invoke} from '@tauri-apps/api/core'
 
 // Stores
 const configStore = useConfigStore()
@@ -19,8 +19,8 @@ const defaultDownloadPath = ref('')
 
 // 表单数据
 const form = reactive({
-  download: { savePath: '' },
-  history: { maxRecords: 100 }
+  download: {savePath: ''},
+  history: {maxRecords: 100}
 })
 
 // 缓存大小
@@ -63,7 +63,7 @@ const loadCacheSize = async () => {
     getFileSize(FILE_NAMES.CONFIG),
     getFileSize(FILE_NAMES.PARSE_HISTORY)
   ])
-  
+
   cacheSize.downloadHistory = formatBytes(downloadSize)
   cacheSize.bilibiliAuth = formatBytes(bilibiliSize)
   cacheSize.appConfig = formatBytes(configSize)
@@ -102,7 +102,7 @@ const clearParseHistory = async () => {
 const openCacheDir = async () => {
   try {
     const dir = await appDataDir()
-    await invoke('open_folder', { path: dir })
+    await invoke('open_folder', {path: dir})
   } catch (e) {
     console.error('打开目录失败:', e)
     toast.error('打开目录失败')
@@ -202,12 +202,12 @@ onMounted(() => {
           <span class="setting-label">历史记录数量</span>
         </div>
         <div class="number-input-group">
-          <input v-model.number="form.history.maxRecords" 
-                 type="number" 
-                 min="10" 
-                 max="500" 
+          <input v-model.number="form.history.maxRecords"
                  class="number-input"
-                 @change="onMaxRecordsChange" />
+                 max="500"
+                 min="10"
+                 type="number"
+                 @change="onMaxRecordsChange"/>
           <span class="number-unit">条</span>
         </div>
       </div>
@@ -239,10 +239,11 @@ onMounted(() => {
         <div class="cache-item">
           <span class="cache-name">下载历史</span>
           <div class="cache-control">
-            <input class="cache-input" :value="cacheSize.downloadHistory" readonly />
+            <input :value="cacheSize.downloadHistory" class="cache-input" readonly/>
             <button class="cache-clear-btn" title="清除" @click="clearDownloadHistory">
               <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16">
-                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                <path
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
             </button>
           </div>
@@ -252,10 +253,11 @@ onMounted(() => {
         <div class="cache-item">
           <span class="cache-name">B站登录</span>
           <div class="cache-control">
-            <input class="cache-input" :value="cacheSize.bilibiliAuth" readonly />
+            <input :value="cacheSize.bilibiliAuth" class="cache-input" readonly/>
             <button class="cache-clear-btn" title="清除" @click="clearBiliAuth">
               <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16">
-                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                <path
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
             </button>
           </div>
@@ -265,10 +267,11 @@ onMounted(() => {
         <div class="cache-item">
           <span class="cache-name">解析历史</span>
           <div class="cache-control">
-            <input class="cache-input" :value="cacheSize.parseHistory" readonly />
+            <input :value="cacheSize.parseHistory" class="cache-input" readonly/>
             <button class="cache-clear-btn" title="清除" @click="clearParseHistory">
               <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16">
-                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                <path
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
             </button>
           </div>
@@ -278,10 +281,11 @@ onMounted(() => {
         <div class="cache-item">
           <span class="cache-name">应用配置</span>
           <div class="cache-control">
-            <input class="cache-input" :value="cacheSize.appConfig" readonly />
+            <input :value="cacheSize.appConfig" class="cache-input" readonly/>
             <button class="cache-clear-btn" title="重置" @click="resetAppConfig">
               <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16">
-                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                <path
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
             </button>
           </div>
@@ -292,21 +296,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.settings-panel {
-  animation: fadeIn var(--transition-fast, 200ms) var(--easing-ease, ease);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .setting-group {
   padding-bottom: 16px;
   margin-bottom: 16px;

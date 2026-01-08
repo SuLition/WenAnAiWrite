@@ -1,6 +1,6 @@
 <script setup>
-import { reactive, onMounted, onUnmounted } from 'vue'
-import { toast } from 'vue-sonner'
+import {reactive, onMounted, onUnmounted} from 'vue'
+import {toast} from 'vue-sonner'
 import {
   generateQRCode,
   pollQRCodeStatus,
@@ -55,7 +55,7 @@ const startBilibiliLogin = async () => {
     bilibiliLoginState.status = 'loading'
     bilibiliLoginState.statusText = '正在获取二维码...'
 
-    const { url, qrcode_key } = await generateQRCode()
+    const {url, qrcode_key} = await generateQRCode()
     bilibiliLoginState.qrcode = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}`
     bilibiliLoginState.qrcodeKey = qrcode_key
     bilibiliLoginState.status = 'scanning'
@@ -84,7 +84,7 @@ const startPolling = () => {
           bilibiliLoginState.statusText = '登录成功'
           bilibiliLoginState.isLoggedIn = true
           bilibiliLoginState.qrcode = null
-          saveBilibiliAuth({ cookies: result.cookies }).then(() => {
+          saveBilibiliAuth({cookies: result.cookies}).then(() => {
             // 保存完成后获取用户信息
           })
           try {
@@ -203,20 +203,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.settings-panel {
-  animation: fadeIn var(--transition-fast, 200ms) var(--easing-ease, ease);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 /* 账号卡片 */
 .account-card {

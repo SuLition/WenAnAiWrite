@@ -1,10 +1,10 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { toast } from 'vue-sonner'
-import { useThemeStore, useConfigStore, useUpdateStore } from '@/stores'
-import { PAGE_TRANSITION_OPTIONS } from '@/services/config'
-import { ACCENT_COLOR_OPTIONS } from '@/constants/theme'
-import { ANIMATION_SPEED_OPTIONS } from '@/constants/animation'
+import {ref, computed, onMounted} from 'vue'
+import {toast} from 'vue-sonner'
+import {useThemeStore, useConfigStore, useUpdateStore} from '@/stores'
+import {PAGE_TRANSITION_OPTIONS} from '@/services/config'
+import {ACCENT_COLOR_OPTIONS} from '@/constants/theme'
+import {ANIMATION_SPEED_OPTIONS} from '@/constants/animation'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 
 // Stores
@@ -14,8 +14,8 @@ const updateStore = useUpdateStore()
 
 // 窗口效果选项
 const WINDOW_EFFECT_OPTIONS = [
-  { value: 'none', label: '无效果' },
-  { value: 'mica', label: 'Mica (云母)' }
+  {value: 'none', label: '无效果'},
+  {value: 'mica', label: 'Mica (云母)'}
 ]
 
 // 检查中状态
@@ -50,11 +50,11 @@ const maxConcurrent = computed({
 
 // 并行任务数选项
 const CONCURRENT_OPTIONS = [
-  { value: 1, label: '1 个' },
-  { value: 2, label: '2 个' },
-  { value: 3, label: '3 个' },
-  { value: 5, label: '5 个' },
-  { value: 10, label: '10 个' }
+  {value: 1, label: '1 个'},
+  {value: 2, label: '2 个'},
+  {value: 3, label: '3 个'},
+  {value: 5, label: '5 个'},
+  {value: 10, label: '10 个'}
 ]
 
 const autoCheckUpdate = computed({
@@ -99,7 +99,7 @@ const onAnimationSpeedChange = (value) => {
 // 手动检查更新
 const checkUpdateNow = async () => {
   if (isChecking.value) return
-  
+
   isChecking.value = true
   try {
     await updateStore.checkUpdate(true)
@@ -138,13 +138,13 @@ const checkUpdateNow = async () => {
         </div>
         <div class="color-picker">
           <button
-            v-for="color in ACCENT_COLOR_OPTIONS"
-            :key="color.value"
-            class="color-dot"
-            :class="{ active: accentColor === color.value }"
-            :style="{ '--color': color.color }"
-            :title="color.label"
-            @click="onAccentColorChange(color.value)"
+              v-for="color in ACCENT_COLOR_OPTIONS"
+              :key="color.value"
+              :class="{ active: accentColor === color.value }"
+              :style="{ '--color': color.color }"
+              :title="color.label"
+              class="color-dot"
+              @click="onAccentColorChange(color.value)"
           />
         </div>
       </div>
@@ -177,12 +177,12 @@ const checkUpdateNow = async () => {
         </div>
         <div class="speed-picker">
           <button
-            v-for="option in ANIMATION_SPEED_OPTIONS"
-            :key="option.value"
-            class="speed-btn"
-            :class="{ active: animationSpeed === option.value }"
-            :title="option.description"
-            @click="onAnimationSpeedChange(option.value)"
+              v-for="option in ANIMATION_SPEED_OPTIONS"
+              :key="option.value"
+              :class="{ active: animationSpeed === option.value }"
+              :title="option.description"
+              class="speed-btn"
+              @click="onAnimationSpeedChange(option.value)"
           >
             {{ option.label }}
           </button>
@@ -196,9 +196,9 @@ const checkUpdateNow = async () => {
       <div class="setting-item">
         <div class="setting-row">
           <svg class="setting-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <rect x="3" y="4" width="18" height="4" rx="1"/>
-            <rect x="3" y="10" width="18" height="4" rx="1"/>
-            <rect x="3" y="16" width="18" height="4" rx="1"/>
+            <rect height="4" rx="1" width="18" x="3" y="4"/>
+            <rect height="4" rx="1" width="18" x="3" y="10"/>
+            <rect height="4" rx="1" width="18" x="3" y="16"/>
           </svg>
           <span class="setting-label">并行任务数</span>
         </div>
@@ -214,12 +214,12 @@ const checkUpdateNow = async () => {
           <svg class="setting-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
             <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
+            <line x1="12" x2="12" y1="3" y2="15"/>
           </svg>
           <span class="setting-label">自动检查更新</span>
         </div>
         <label class="switch">
-          <input type="checkbox" v-model="autoCheckUpdate">
+          <input v-model="autoCheckUpdate" type="checkbox">
           <span class="slider"></span>
         </label>
       </div>
@@ -236,7 +236,8 @@ const checkUpdateNow = async () => {
           </svg>
           <span class="setting-label">检查更新</span>
         </div>
-        <button class="check-update-btn" :class="{ 'btn-loading': isChecking }" @click="checkUpdateNow">立即检查</button>
+        <button :class="{ 'btn-loading': isChecking }" class="check-update-btn" @click="checkUpdateNow">立即检查
+        </button>
       </div>
       <p class="setting-hint">手动检查是否有新版本可用</p>
     </div>
@@ -244,20 +245,6 @@ const checkUpdateNow = async () => {
 </template>
 
 <style scoped>
-.settings-panel {
-  animation: fadeIn var(--transition-fast, 200ms) var(--easing-ease, ease);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 .setting-group {
   padding-bottom: 16px;
