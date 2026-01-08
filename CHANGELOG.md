@@ -1,5 +1,16 @@
 # 更新日志
 
+## v0.2.7
+
+### 重命名
+
+- **项目更名为 CatParse**：全面更新项目标识、配置文件和界面显示
+- 应用名称：WenAnAssistant → CatParse
+- 应用标识：com.wenanassistant.app → com.catparse.app
+- GitHub 仓库地址更新
+
+---
+
 ## v0.2.6
 
 ### 修复
