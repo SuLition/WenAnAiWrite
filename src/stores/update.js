@@ -57,12 +57,12 @@ export const useUpdateStore = defineStore('update', {
           toast.success('已是最新版本')
         }
       } catch (e) {
-        // 打印完整错误信息以便调试
-        console.error('[更新] 检查失败:', e)
-        console.error('[更新] 错误详情:', e.message || e.toString())
+        // 只在手动检查时显示错误
         if (showNoUpdate) {
-          toast.error('检查更新失败，请稍后重试')
+          console.error('[更新] 检查失败:', e.message || e.toString())
+          toast.error('检查更新失败，请检查网络连接')
         }
+        // 自动检查失败时静默处理（网络问题很常见）
       }
     },
 
