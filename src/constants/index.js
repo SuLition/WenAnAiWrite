@@ -10,3 +10,6 @@ export * from './platforms'
 
 // 主题相关常量
 export * from './theme'
+
+// 动画相关常量
+export * from './animation'

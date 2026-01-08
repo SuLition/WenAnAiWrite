@@ -1,9 +1,9 @@
 <script setup>
-import { ref } from 'vue';
-import { toast } from 'vue-sonner';
+import {ref} from 'vue';
+import {toast} from 'vue-sonner';
 import CustomSelect from '@/components/common/CustomSelect.vue';
-import { formatDuration } from '@/utils/format.js';
-import { openDownloadDir } from '@/services/download/tauriDownload.js';
+import {formatDuration} from '@/utils/format.js';
+import {openDownloadDir} from '@/services/download/tauriDownload.js';
 import {
   downloadBilibili,
   downloadDouyin,
@@ -61,21 +61,21 @@ const handleDownload = async () => {
           selectedStream.stream.url,
           `${fileName}_${selectedStream.stream.short}.mp4`,
           onProgress,
-          { backupUrls: selectedStream.stream.backupUrl || [] }
+          {backupUrls: selectedStream.stream.backupUrl || []}
       );
     } else if (props.videoInfo.platform === 'douyin') {
       await downloadDouyin(
           selectedStream.stream.url,
           `${fileName}_${selectedStream.stream.short}.mp4`,
           onProgress,
-          { backupUrls: selectedStream.stream.backupUrls || [] }
+          {backupUrls: selectedStream.stream.backupUrls || []}
       );
     } else if (props.videoInfo.platform === 'xiaohongshu') {
       await downloadXiaohongshu(
           selectedStream.stream.url,
           `${fileName}_${selectedStream.stream.short}.mp4`,
           onProgress,
-          { backupUrls: selectedStream.stream.backupUrls || [] }
+          {backupUrls: selectedStream.stream.backupUrls || []}
       );
     }
 
@@ -111,19 +111,25 @@ const handleDownload = async () => {
           <div v-if="videoInfo.views" class="stat-item">
             <svg fill="none" viewBox="0 0 24 24">
               <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2"/>
-              <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke="currentColor" stroke-width="2"/>
+              <path
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  stroke="currentColor" stroke-width="2"/>
             </svg>
             <span>{{ videoInfo.views }}</span>
           </div>
           <div v-if="videoInfo.danmaku" class="stat-item">
             <svg fill="none" viewBox="0 0 24 24">
-              <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              <path
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
             </svg>
             <span>{{ videoInfo.danmaku }}</span>
           </div>
           <div v-if="videoInfo.likes" class="stat-item">
             <svg fill="none" viewBox="0 0 24 24">
-              <path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              <path
+                  d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"
+                  stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
             </svg>
             <span>{{ videoInfo.likes }}</span>
           </div>
@@ -136,19 +142,25 @@ const handleDownload = async () => {
           </div>
           <div v-if="videoInfo.comments" class="stat-item">
             <svg fill="none" viewBox="0 0 24 24">
-              <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              <path
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
             </svg>
             <span>{{ videoInfo.comments }}</span>
           </div>
           <div v-if="videoInfo.favorite || videoInfo.collects" class="stat-item">
             <svg fill="none" viewBox="0 0 24 24">
-              <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" stroke="currentColor" stroke-width="2"/>
+              <path
+                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                  stroke="currentColor" stroke-width="2"/>
             </svg>
             <span>{{ videoInfo.favorite || videoInfo.collects }}</span>
           </div>
           <div v-if="videoInfo.share || videoInfo.shares" class="stat-item">
             <svg fill="none" viewBox="0 0 24 24">
-              <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              <path
+                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                  stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
             </svg>
             <span>{{ videoInfo.share || videoInfo.shares }}</span>
           </div>
@@ -209,7 +221,8 @@ const handleDownload = async () => {
           >
             <svg v-if="!isDownloading" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <rect height="16" rx="2" stroke="currentColor" stroke-width="2" width="20" x="2" y="4"/>
-              <path d="M2 8h20M2 16h20M6 4v4M6 16v4M18 4v4M18 16v4" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+              <path d="M2 8h20M2 16h20M6 4v4M6 16v4M18 4v4M18 16v4" stroke="currentColor" stroke-linecap="round"
+                    stroke-width="2"/>
             </svg>
             <svg v-else class="spin" fill="none" viewBox="0 0 24 24">
               <circle cx="12" cy="12" opacity="0.3" r="10" stroke="currentColor" stroke-width="2"/>
@@ -219,8 +232,10 @@ const handleDownload = async () => {
           </button>
           <button class="open-folder-btn" title="打开下载文件夹" @click="openDownloadDir">
             <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-              <path d="M12 11v6M9 14l3-3 3 3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z" stroke="currentColor"
+                    stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              <path d="M12 11v6M9 14l3-3 3 3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2"/>
             </svg>
           </button>
         </div>
@@ -388,7 +403,7 @@ const handleDownload = async () => {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-normal) var(--easing-ease);
   overflow: hidden;
 }
 
@@ -401,7 +416,7 @@ const handleDownload = async () => {
 }
 
 .download-button svg.spin {
-  animation: spin 1s linear infinite;
+  animation: spin var(--animation-spin, 1000ms) linear infinite;
 }
 
 .download-button .download-text {
@@ -449,7 +464,7 @@ const handleDownload = async () => {
   border-radius: 6px;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
   flex-shrink: 0;
 }
 
@@ -466,7 +481,11 @@ const handleDownload = async () => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

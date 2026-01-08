@@ -27,7 +27,7 @@ const handleDelete = async (id) => {
 const handleViewRecord = (item) => {
   router.push({
     path: '/parse',
-    query: { historyId: item.id }
+    query: {historyId: item.id}
   });
 };
 
@@ -177,7 +177,7 @@ const clearAll = async () => {
   color: var(--text-secondary);
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-normal) var(--easing-ease);
 }
 
 .clear-button:hover {
@@ -219,7 +219,7 @@ const clearAll = async () => {
   border: 1px solid var(--border-primary);
   border-radius: 12px;
   padding: 16px;
-  transition: all 0.3s;
+  transition: all var(--transition-normal) var(--easing-ease);
 }
 
 .history-card:hover {
@@ -323,7 +323,7 @@ const clearAll = async () => {
   color: var(--text-secondary);
   cursor: pointer;
   opacity: 0;
-  transition: all 0.2s;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 .copy-btn svg {
@@ -366,7 +366,7 @@ const clearAll = async () => {
   font-size: 13px;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 .action-btn.primary {

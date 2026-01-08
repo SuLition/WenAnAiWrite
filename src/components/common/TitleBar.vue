@@ -1,6 +1,6 @@
 <script setup>
-import { getCurrentWindow } from '@tauri-apps/api/window';
-import { onMounted, ref } from 'vue';
+import {getCurrentWindow} from '@tauri-apps/api/window';
+import {onMounted, ref} from 'vue';
 
 const maxed = ref(false);
 const appWindow = getCurrentWindow();
@@ -13,7 +13,6 @@ const icons = {
 };
 
 
-
 onMounted(() =>
     appWindow.onResized(
         async () => (maxed.value = await appWindow.isMaximized()),
@@ -23,8 +22,8 @@ onMounted(() =>
 
 <template>
   <div
-      data-tauri-drag-region
       class="title-bar"
+      data-tauri-drag-region
       @dblclick="appWindow.toggleMaximize()"
   >
     <div class="title-bar-buttons title-bar-no-drag">
@@ -85,7 +84,7 @@ onMounted(() =>
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  transition: all 0.3s;
+  transition: all var(--transition-normal) var(--easing-ease);
   width: 45px;
   height: 30px;
   font-size: 12px;

@@ -177,7 +177,7 @@ onMounted(() => {
 
 <style scoped>
 .settings-panel {
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 @keyframes fadeIn {

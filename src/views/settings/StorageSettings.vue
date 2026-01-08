@@ -293,7 +293,7 @@ onMounted(() => {
 
 <style scoped>
 .settings-panel {
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 @keyframes fadeIn {
@@ -377,7 +377,7 @@ onMounted(() => {
   border-radius: 6px;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 .btn-icon:hover {
@@ -449,7 +449,7 @@ onMounted(() => {
   color: var(--text-secondary);
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 .btn-open-dir:hover {
@@ -524,7 +524,7 @@ onMounted(() => {
   border-radius: 0 6px 6px 0;
   color: var(--accent-color);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 .cache-clear-btn:hover {

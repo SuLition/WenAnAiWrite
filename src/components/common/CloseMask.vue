@@ -60,7 +60,7 @@ onUnmounted(() => {
   border: 4px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin var(--animation-spin, 1000ms) linear infinite;
 }
 
 .closing-text {

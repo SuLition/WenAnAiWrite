@@ -5,8 +5,8 @@ import CloseMask from "./components/common/CloseMask.vue";
 import {toasterOptions} from "./utils/index.js";
 import TitleBar from "./components/common/TitleBar.vue";
 import Sidebar from "./components/common/Sidebar.vue";
-import { Updater } from "./components/common";
-import { useThemeStore, useConfigStore, useUpdateStore } from './stores'
+import {Updater} from "./components/common";
+import {useThemeStore, useConfigStore, useUpdateStore} from './stores'
 import {getCurrentWindow} from '@tauri-apps/api/window'
 
 // Stores
@@ -28,6 +28,8 @@ onMounted(async () => {
   try {
     // 加载配置（必须等待完成，否则主题等设置无法正确恢复）
     await configStore.load()
+    // 初始化动画速率
+    configStore.initAnimationSpeed()
     // 初始化主题
     await themeStore.init()
     // 标记初始化完成，显示内容并隐藏加载动画
@@ -52,21 +54,21 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="app-container" :class="{ 'app-ready': initialized }">
+  <div :class="{ 'app-ready': initialized }" class="app-container">
     <Sidebar/>
     <div class="main-content">
       <TitleBar/>
       <router-view v-slot="{ Component }">
         <transition :name="pageTransition" mode="out-in">
-          <component :is="Component" />
+          <component :is="Component"/>
         </transition>
       </router-view>
       <!-- 消息通知 -->
-      <Toaster v-bind="toasterOptions" :theme="toasterTheme"/>
+      <Toaster :theme="toasterTheme" v-bind="toasterOptions"/>
       <!-- 关闭提示遮罩层 -->
       <CloseMask/>
       <!-- 更新组件 -->
-      <Updater />
+      <Updater/>
     </div>
   </div>
 </template>
@@ -84,7 +86,7 @@ html, body, #app {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  transition: background-color 0.3s ease;
+  transition: background-color var(--transition-normal) var(--easing-ease);
 }
 
 /* 启用毛玻璃效果时背景透明 */
@@ -103,7 +105,7 @@ body {
   width: 100%;
   height: 100vh;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--transition-fastest, 150ms) var(--easing-ease, ease);
 }
 
 .app-container.app-ready {
@@ -116,7 +118,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   background: var(--bg-gradient);
-  transition: background 0.3s ease;
+  transition: background var(--transition-normal) var(--easing-ease);
 }
 
 /* 启用毛玻璃效果时主内容区背景透明 */
@@ -128,7 +130,7 @@ html.window-effect-enabled .main-content {
 html.window-effect-enabled .sidebar {
   background: transparent !important;
 }
- 
+
 /* 启用毛玻璃效果时设置页面透明 */
 html.window-effect-enabled .settings-page {
   background: transparent !important;
@@ -162,7 +164,7 @@ select {
   font-size: 14px;
   cursor: pointer;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23afb1b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
@@ -199,8 +201,9 @@ select:disabled {
 /* 淡入淡出 */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
@@ -209,12 +212,14 @@ select:disabled {
 /* 左滑 */
 .slide-left-enter-active,
 .slide-left-leave-active {
-  transition: all 0.25s ease-out;
+  transition: all var(--transition-normal) var(--easing-ease-out);
 }
+
 .slide-left-enter-from {
   opacity: 0;
   transform: translateX(20px);
 }
+
 .slide-left-leave-to {
   opacity: 0;
   transform: translateX(-20px);
@@ -223,12 +228,14 @@ select:disabled {
 /* 右滑 */
 .slide-right-enter-active,
 .slide-right-leave-active {
-  transition: all 0.25s ease-out;
+  transition: all var(--transition-normal) var(--easing-ease-out);
 }
+
 .slide-right-enter-from {
   opacity: 0;
   transform: translateX(-20px);
 }
+
 .slide-right-leave-to {
   opacity: 0;
   transform: translateX(20px);
@@ -237,12 +244,14 @@ select:disabled {
 /* 上滑 */
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: all 0.25s ease-out;
+  transition: all var(--transition-normal) var(--easing-ease-out);
 }
+
 .slide-up-enter-from {
   opacity: 0;
   transform: translateY(20px);
 }
+
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
@@ -251,12 +260,14 @@ select:disabled {
 /* 缩放 */
 .zoom-enter-active,
 .zoom-leave-active {
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
+
 .zoom-enter-from {
   opacity: 0;
   transform: scale(0.95);
 }
+
 .zoom-leave-to {
   opacity: 0;
   transform: scale(1.05);

@@ -6,6 +6,7 @@
 import { defineStore } from 'pinia'
 import { readJsonFile, writeJsonFile, removeFile, FILE_NAMES } from '@/services/storage/fileStorage'
 import { defaultConfig } from '@/services/config/defaultConfig'
+import { applyAnimationVars } from '@/constants'
 
 /**
  * 深度合并对象
@@ -35,6 +36,8 @@ export const useConfigStore = defineStore('config', {
     download: (state) => state.config.download || {},
     // 历史记录配置
     history: (state) => state.config.history || {},
+    // 动画速率
+    animationSpeed: (state) => state.config.appearance?.animationSpeed || 'normal',
     // AI 服务配置状态
     serviceStatus: (state) => ({
       tencentAsr: !!(state.config.tencentAsr?.secretId && state.config.tencentAsr?.secretKey),
@@ -109,6 +112,22 @@ export const useConfigStore = defineStore('config', {
       this.config = { ...defaultConfig }
       await removeFile(FILE_NAMES.CONFIG)
       return this.config
+    },
+
+    /**
+     * 设置动画速率
+     */
+    async setAnimationSpeed(speed) {
+      await this.update('appearance.animationSpeed', speed)
+      applyAnimationVars(speed)
+    },
+
+    /**
+     * 初始化动画速率（应用启动时调用）
+     */
+    initAnimationSpeed() {
+      const speed = this.config.appearance?.animationSpeed || 'normal'
+      applyAnimationVars(speed)
     }
   }
 })

@@ -204,7 +204,7 @@ onUnmounted(() => {
 
 <style scoped>
 .settings-panel {
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 @keyframes fadeIn {
@@ -340,7 +340,7 @@ onUnmounted(() => {
   border: 2px solid var(--border-primary);
   border-top-color: #fb7299;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin var(--animation-draw-circle, 800ms) linear infinite;
 }
 
 /* 二维码 */
@@ -390,7 +390,7 @@ onUnmounted(() => {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 .btn-outline-danger {
@@ -436,6 +436,6 @@ onUnmounted(() => {
 }
 
 .spin {
-  animation: spin 1s linear infinite;
+  animation: spin var(--animation-spin, 1000ms) linear infinite;
 }
 </style>

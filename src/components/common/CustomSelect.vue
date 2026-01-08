@@ -117,7 +117,7 @@ onUnmounted(() => {
   border: 1px solid var(--border-primary);
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
   min-height: 40px;
 }
 
@@ -160,7 +160,7 @@ onUnmounted(() => {
   color: var(--text-secondary);
   flex-shrink: 0;
   margin-left: 8px;
-  transition: transform 0.2s ease;
+  transition: transform var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 .custom-select.open .select-arrow {
@@ -211,7 +211,7 @@ onUnmounted(() => {
   color: var(--text-secondary);
   cursor: pointer;
   border-radius: 4px;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fastest, 150ms) var(--easing-ease, ease);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -258,7 +258,7 @@ onUnmounted(() => {
 /* 下拉动画 */
 .dropdown-enter-active,
 .dropdown-leave-active {
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 .dropdown-enter-from,

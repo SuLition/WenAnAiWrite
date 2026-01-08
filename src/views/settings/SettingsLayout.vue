@@ -1,15 +1,15 @@
 <script setup>
-import { useRoute } from 'vue-router'
+import {useRoute} from 'vue-router'
 
 const route = useRoute()
 
 // 子导航配置
 const navItems = [
-  { id: 'general', label: '通用', icon: 'settings', path: '/settings/general' },
-  { id: 'storage', label: '存储', icon: 'folder', path: '/settings/storage' },
-  { id: 'account', label: '账号', icon: 'user', path: '/settings/account' },
-  { id: 'api', label: 'API', icon: 'key', path: '/settings/api' },
-  { id: 'about', label: '关于', icon: 'info', path: '/settings/about' }
+  {id: 'general', label: '通用', icon: 'settings', path: '/settings/general'},
+  {id: 'storage', label: '存储', icon: 'folder', path: '/settings/storage'},
+  {id: 'account', label: '账号', icon: 'user', path: '/settings/account'},
+  {id: 'api', label: 'API', icon: 'key', path: '/settings/api'},
+  {id: 'about', label: '关于', icon: 'info', path: '/settings/about'}
 ]
 
 // 判断导航是否激活
@@ -24,13 +24,13 @@ const isActive = (path) => route.path === path
         <svg class="header-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="3"/>
           <path
-              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
         <h1 class="page-title">设置</h1>
       </div>
 
       <!-- 子路由内容 -->
-      <router-view />
+      <router-view/>
     </div>
 
     <!-- 右侧子导航 -->
@@ -38,8 +38,8 @@ const isActive = (path) => route.path === path
       <router-link
           v-for="item in navItems"
           :key="item.id"
-          :to="item.path"
           :class="['nav-item', { active: isActive(item.path) }]"
+          :to="item.path"
       >
         <span class="nav-label">{{ item.label }}</span>
         <svg v-if="item.icon === 'settings'" class="nav-icon" fill="none" stroke="currentColor" stroke-width="2"
@@ -65,8 +65,8 @@ const isActive = (path) => route.path === path
         <svg v-else-if="item.icon === 'info'" class="nav-icon" fill="none" stroke="currentColor" stroke-width="2"
              viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="16" x2="12" y2="12"/>
-          <line x1="12" y1="8" x2="12.01" y2="8"/>
+          <line x1="12" x2="12" y1="16" y2="12"/>
+          <line x1="12" x2="12.01" y1="8" y2="8"/>
         </svg>
       </router-link>
     </nav>
@@ -141,8 +141,9 @@ const isActive = (path) => route.path === path
   padding: 10px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-normal) var(--easing-ease-in-out);
   text-decoration: none;
+  position: relative;
 }
 
 .nav-item:hover {
@@ -156,19 +157,23 @@ const isActive = (path) => route.path === path
 .nav-label {
   font-size: 13px;
   color: var(--text-secondary);
+  transition: all var(--transition-normal) var(--easing-ease-in-out);
 }
 
 .nav-item.active .nav-label {
   color: var(--accent-color);
+  font-weight: 500;
 }
 
 .nav-icon {
   width: 16px;
   height: 16px;
   color: var(--text-tertiary);
+  transition: all var(--transition-normal) var(--easing-ease-in-out);
 }
 
 .nav-item.active .nav-icon {
   color: var(--accent-color);
+  transform: scale(1.1);
 }
 </style>

@@ -112,7 +112,7 @@ const handleClear = () => {
   color: var(--text-primary);
   font-size: 14px;
   outline: none;
-  transition: all 0.3s;
+  transition: all var(--transition-normal) var(--easing-ease);
 }
 
 .url-input:focus {
@@ -138,7 +138,7 @@ const handleClear = () => {
   border-radius: 4px;
   color: var(--text-tertiary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 .clear-btn:hover {
@@ -165,7 +165,7 @@ const handleClear = () => {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-normal) var(--easing-ease);
 }
 
 .parse-button svg {
@@ -175,7 +175,7 @@ const handleClear = () => {
 }
 
 .parse-button svg.spin {
-  animation: spin 1s linear infinite;
+  animation: spin var(--animation-spin, 1000ms) linear infinite;
 }
 
 .parse-button:hover:not(:disabled) {

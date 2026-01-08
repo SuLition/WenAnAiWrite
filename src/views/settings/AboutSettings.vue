@@ -113,7 +113,7 @@ const openGitHub = async () => {
 
 <style scoped>
 .settings-panel {
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 @keyframes fadeIn {
@@ -259,7 +259,7 @@ const openGitHub = async () => {
   border: 1px solid var(--border-primary);
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
   font-size: 14px;
   color: var(--text-primary);
 }

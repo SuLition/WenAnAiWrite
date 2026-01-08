@@ -162,7 +162,7 @@ const { visible, updateInfo, downloading, progress } = storeToRefs(updateStore)
 .progress-fill {
   height: 100%;
   background: var(--accent-color);
-  transition: width 0.2s ease;
+  transition: width var(--transition-fast, 200ms) var(--easing-ease, ease);
   border-radius: 3px;
 }
 
@@ -190,7 +190,7 @@ const { visible, updateInfo, downloading, progress } = storeToRefs(updateStore)
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
   border: none;
   min-width: 100px;
 }
@@ -222,7 +222,7 @@ const { visible, updateInfo, downloading, progress } = storeToRefs(updateStore)
 /* 过渡动画 */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 .fade-enter-from,
@@ -232,7 +232,8 @@ const { visible, updateInfo, downloading, progress } = storeToRefs(updateStore)
 
 .fade-enter-active .updater-dialog,
 .fade-leave-active .updater-dialog {
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: transform var(--transition-fast, 200ms) var(--easing-ease, ease), 
+              opacity var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 .fade-enter-from .updater-dialog,

@@ -583,7 +583,7 @@ const handleCopy = () => {
   border-radius: 50%;
   color: #ffffff;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
   flex-shrink: 0;
 }
 
@@ -603,7 +603,7 @@ const handleCopy = () => {
 }
 
 .play-btn .spin {
-  animation: spin 1s linear infinite;
+  animation: spin var(--animation-spin, 1000ms) linear infinite;
 }
 
 .progress-wrapper {
@@ -684,7 +684,7 @@ const handleCopy = () => {
   border-radius: 6px;
   color: var(--accent-color);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 .floating-btn svg {
@@ -708,7 +708,7 @@ const handleCopy = () => {
 }
 
 .floating-btn .spin {
-  animation: spin 1s linear infinite;
+  animation: spin var(--animation-spin, 1000ms) linear infinite;
 }
 
 .mode-tag {
@@ -803,7 +803,7 @@ const handleCopy = () => {
   resize: none;
   outline: none;
   font-family: inherit;
-  transition: all 0.3s;
+  transition: all var(--transition-normal) var(--easing-ease);
 }
 
 .prompt-textarea:focus {
@@ -824,7 +824,7 @@ const handleCopy = () => {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-normal) var(--easing-ease);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -4,6 +4,7 @@ import { toast } from 'vue-sonner'
 import { useThemeStore, useConfigStore, useUpdateStore } from '@/stores'
 import { PAGE_TRANSITION_OPTIONS } from '@/services/config'
 import { ACCENT_COLOR_OPTIONS } from '@/constants/theme'
+import { ANIMATION_SPEED_OPTIONS } from '@/constants/animation'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 
 // Stores
@@ -82,6 +83,19 @@ const onTransitionChange = (value) => {
   configStore.update('appearance.pageTransition', value)
 }
 
+// 动画速率
+const animationSpeed = computed({
+  get: () => configStore.appearance.animationSpeed || 'normal',
+  set: (val) => configStore.setAnimationSpeed(val)
+})
+
+// 动画速率变更
+const onAnimationSpeedChange = (value) => {
+  configStore.setAnimationSpeed(value)
+  const option = ANIMATION_SPEED_OPTIONS.find(o => o.value === value)
+  toast.success(`动画速率已设置为「${option?.label || value}」`)
+}
+
 // 手动检查更新
 const checkUpdateNow = async () => {
   if (isChecking.value) return
@@ -152,6 +166,31 @@ const checkUpdateNow = async () => {
       <p class="setting-hint">切换页面时的动画效果</p>
     </div>
 
+    <!-- 动画速率 -->
+    <div class="setting-group">
+      <div class="setting-item">
+        <div class="setting-row">
+          <svg class="setting-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          <span class="setting-label">动画速率</span>
+        </div>
+        <div class="speed-picker">
+          <button
+            v-for="option in ANIMATION_SPEED_OPTIONS"
+            :key="option.value"
+            class="speed-btn"
+            :class="{ active: animationSpeed === option.value }"
+            :title="option.description"
+            @click="onAnimationSpeedChange(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+      </div>
+      <p class="setting-hint">调整应用动画的播放速度</p>
+    </div>
+
     <!-- 任务并行数 -->
     <div class="setting-group">
       <div class="setting-item">
@@ -206,7 +245,7 @@ const checkUpdateNow = async () => {
 
 <style scoped>
 .settings-panel {
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 @keyframes fadeIn {
@@ -289,7 +328,7 @@ const checkUpdateNow = async () => {
   bottom: 0;
   background-color: var(--bg-primary);
   border: 1px solid var(--border-primary);
-  transition: 0.2s;
+  transition: var(--transition-fast, 200ms);
   border-radius: 24px;
 }
 
@@ -301,7 +340,7 @@ const checkUpdateNow = async () => {
   left: 2px;
   bottom: 2px;
   background-color: var(--text-tertiary);
-  transition: 0.2s;
+  transition: var(--transition-fast, 200ms);
   border-radius: 50%;
 }
 
@@ -322,7 +361,7 @@ input:checked + .slider:before {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
   border: 1px solid var(--border-primary);
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -347,7 +386,7 @@ input:checked + .slider:before {
   background-color: var(--color);
   border: 2px solid transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
   padding: 0;
 }
 
@@ -358,5 +397,34 @@ input:checked + .slider:before {
 .color-dot.active {
   border-color: var(--text-primary);
   box-shadow: 0 0 0 2px var(--color);
+}
+
+/* 动画速率选择器 */
+.speed-picker {
+  display: flex;
+  gap: 6px;
+}
+
+.speed-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.2s) ease;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+}
+
+.speed-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.speed-btn.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
 }
 </style>

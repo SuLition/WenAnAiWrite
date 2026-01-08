@@ -41,13 +41,13 @@ const getStatusClass = (status) => {
 // 获取进度条样式
 const getProgressStyle = (status) => {
   if (status === TASK_STATUS.SUCCESS) {
-    return { width: '100%' };
+    return {width: '100%'};
   } else if (status === TASK_STATUS.RUNNING) {
-    return { width: '50%' };
+    return {width: '50%'};
   } else if (status === TASK_STATUS.QUEUED) {
-    return { width: '0%' };
+    return {width: '0%'};
   }
-  return { width: '0%' };
+  return {width: '0%'};
 };
 
 // 是否显示重试按钮
@@ -144,25 +144,26 @@ const formatTime = (timestamp) => {
             <span class="task-label">{{ getTypeText(task.type) }}</span>
             <div class="progress-wrapper">
               <div class="progress-track">
-                <div 
-                    class="progress-fill" 
+                <div
                     :class="getStatusClass(task.status)"
                     :style="getProgressStyle(task.status)"
+                    class="progress-fill"
                 ></div>
               </div>
             </div>
-            <span class="task-status" :class="getStatusClass(task.status)">
+            <span :class="getStatusClass(task.status)" class="task-status">
               {{ getStatusText(task.status) }}
             </span>
-            <button 
-                v-if="showRetryButton(task.status)" 
-                class="retry-btn" 
+            <button
+                v-if="showRetryButton(task.status)"
+                class="retry-btn"
                 title="重试"
                 @click="handleRetry(task.id)"
             >
               <svg fill="none" viewBox="0 0 24 24">
-                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
-                      stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                <path
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
               </svg>
             </button>
           </div>
@@ -209,7 +210,7 @@ const formatTime = (timestamp) => {
   color: var(--text-secondary);
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-normal) var(--easing-ease);
 }
 
 .clear-button:hover {
@@ -260,7 +261,7 @@ const formatTime = (timestamp) => {
   border: 1px solid var(--border-primary);
   border-radius: 12px;
   padding: 16px;
-  transition: all 0.3s;
+  transition: all var(--transition-normal) var(--easing-ease);
 }
 
 .task-card:hover {
@@ -356,7 +357,7 @@ const formatTime = (timestamp) => {
   color: var(--text-tertiary);
   cursor: pointer;
   opacity: 0;
-  transition: all 0.2s;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
 }
 
 .remove-btn svg {
@@ -431,8 +432,12 @@ const formatTime = (timestamp) => {
 }
 
 @keyframes progress-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .task-status {
@@ -470,7 +475,7 @@ const formatTime = (timestamp) => {
   border-radius: 4px;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
   flex-shrink: 0;
 }
 
