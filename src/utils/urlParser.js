@@ -33,7 +33,7 @@ export const extractUrlFromText = (text) => {
   if (!text) return '';
   
   const urlPatterns = [
-    /https?:\/\/v\.douyin\.com\/[a-zA-Z0-9]+\/?/i,
+    /https?:\/\/v\.douyin\.com\/[a-zA-Z0-9_-]+\/?/i,
     /https?:\/\/www\.douyin\.com\/video\/\d+/i,
     /https?:\/\/www\.bilibili\.com\/video\/[a-zA-Z0-9]+\/?[^\s]*/i,
     /https?:\/\/b23\.tv\/[a-zA-Z0-9]+\/?/i,
