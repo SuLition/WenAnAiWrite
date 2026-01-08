@@ -8,6 +8,7 @@ import { defineStore } from 'pinia'
 import { toast } from 'vue-sonner'
 import { useConfigStore } from './config'
 import { useHistoryStore } from './history'
+import { fetchWithRetry } from '@/utils/request.js'
 
 // 任务状态常量
 export const TASK_STATUS = {
@@ -169,11 +170,11 @@ export const useTaskQueueStore = defineStore('taskQueue', {
           
           let base64Data = ''
           if (isVideoAudio) {
-            const extractResponse = await fetch('http://127.0.0.1:3721/extract-audio', {
+            const extractResponse = await fetchWithRetry('http://127.0.0.1:3721/extract-audio', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ video_url: audioUrl, platform: 'douyin' })
-            })
+            }, { timeout: 120000 }) // 音频提取可能较慢
             const extractResult = await extractResponse.json()
             if (!extractResult.success) throw new Error(extractResult.message || '音频提取失败')
             base64Data = extractResult.audio_base64
@@ -197,11 +198,11 @@ export const useTaskQueueStore = defineStore('taskQueue', {
           const videoUrl = videoInfo.audioStream?.url || videoInfo.videoUrl
           if (!videoUrl) throw new Error('未获取到小红书视频链接')
           
-          const extractResponse = await fetch('http://127.0.0.1:3721/extract-audio', {
+          const extractResponse = await fetchWithRetry('http://127.0.0.1:3721/extract-audio', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ video_url: videoUrl, platform: 'xiaohongshu' })
-          })
+          }, { timeout: 120000 }) // 音频提取可能较慢
           const extractResult = await extractResponse.json()
           if (!extractResult.success) throw new Error(extractResult.message || '音频提取失败')
           result = await recognizeAudioWithData(extractResult.audio_base64, () => {})

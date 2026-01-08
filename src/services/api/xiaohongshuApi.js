@@ -5,41 +5,16 @@
  */
 
 import { SERVICE_URL } from './config.js'
-
-/**
- * 带超时的 fetch
- * @param {string} url - 请求地址
- * @param {object} options - fetch 选项
- * @param {number} timeout - 超时时间(毫秒)
- */
-async function fetchWithTimeout(url, options = {}, timeout = 30000) {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), timeout)
-  
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal
-    })
-    clearTimeout(timeoutId)
-    return response
-  } catch (error) {
-    clearTimeout(timeoutId)
-    if (error.name === 'AbortError') {
-      throw new Error('请求超时，请稍后重试')
-    }
-    throw error
-  }
-}
+import { fetchWithRetry } from '@/utils/request.js'
 
 /**
  * 检查解析服务是否可用
  */
 export async function checkServiceHealth() {
   try {
-    const response = await fetchWithTimeout(`${SERVICE_URL}/health`, {
+    const response = await fetchWithRetry(`${SERVICE_URL}/health`, {
       method: 'GET'
-    }, 5000)
+    }, { timeout: 5000, retries: 2 })
     return response.ok
   } catch (error) {
     console.error('[xiaohongshuApi] Service health check failed:', error)
@@ -59,13 +34,13 @@ export async function parseXiaohongshuVideo(url) {
     throw new Error('解析服务未启动，请稍后重试')
   }
 
-  const response = await fetchWithTimeout(`${SERVICE_URL}/parse/xiaohongshu`, {
+  const response = await fetchWithRetry(`${SERVICE_URL}/parse/xiaohongshu`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ url })
-  }, 60000)  // 小红书解析可能较慢，设置 60 秒超时
+  }, { timeout: 60000 }) // 小红书解析可能较慢
 
   if (!response.ok) {
     throw new Error(`解析请求失败: HTTP ${response.status}`)

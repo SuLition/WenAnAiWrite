@@ -6,6 +6,7 @@
 
 import { getSessData } from '../auth/bilibiliAuth'
 import { tauriDownloadBilibili, tauriFetchBilibiliAudio, tauriDownloadDouyin, tauriFetchDouyinAudio, tauriDownloadXiaohongshu, tauriFetchXiaohongshuAudio, isTauri } from './tauriDownload'
+import { fetchWithRetry } from '@/utils/request.js'
 
 /**
  * 格式化文件大小
@@ -233,12 +234,12 @@ export async function downloadAudioData(url, platform = 'none', onProgress) {
     })
   }
   
-  // 其他平台使用 fetch
+  // 其他平台使用 fetch（带重试机制）
   console.log('[downloadAudioData] 开始下载音频:', { url, platform })
   
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
     headers: { 'Accept': '*/*' }
-  })
+  }, { timeout: 60000 })
   
   if (!response.ok) {
     console.error('[downloadAudioData] 下载失败:', response.status, response.statusText)

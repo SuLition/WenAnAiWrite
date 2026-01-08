@@ -5,6 +5,7 @@
 import { useConfigStore } from '@/stores'
 import { SERVICE_URL } from './api/config.js'
 import { DEFAULT_PROMPTS } from '@/constants'
+import { fetchWithRetry } from '@/utils/request.js'
 
 /**
  * 获取提示词
@@ -48,8 +49,8 @@ export async function rewriteWithDoubao(text, style = 'professional') {
     temperature: 0.7
   })
 
-  // 使用后端代理
-  const response = await fetch(`${SERVICE_URL}/proxy/doubao`, {
+  // 使用后端代理（带重试机制）
+  const response = await fetchWithRetry(`${SERVICE_URL}/proxy/doubao`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -61,7 +62,7 @@ export async function rewriteWithDoubao(text, style = 'professional') {
       },
       body: requestBody
     })
-  })
+  }, { timeout: 60000 }) // AI请求超时时间设为60秒
 
   const proxyResult = await response.json()
   console.log('[AIRewrite] 代理响应:', proxyResult)

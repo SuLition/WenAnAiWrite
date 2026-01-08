@@ -5,6 +5,7 @@
 
 import { SERVICE_URL } from '../api/config.js'
 import { readJsonFile, writeJsonFile, removeFile, FILE_NAMES } from '../storage/fileStorage.js'
+import { fetchWithRetry } from '@/utils/request.js'
 
 // 内存缓存，避免频繁读文件
 let authCache = null
@@ -14,11 +15,11 @@ let cacheLoaded = false
  * 调用代理 API
  */
 async function proxyRequest(url, method = 'GET', headers = {}) {
-  const response = await fetch(`${SERVICE_URL}/proxy/bilibili`, {
+  const response = await fetchWithRetry(`${SERVICE_URL}/proxy/bilibili`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url, method, headers })
-  })
+  }, { timeout: 15000 })
   
   const result = await response.json()
   if (!result.success) {
