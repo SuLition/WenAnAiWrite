@@ -205,7 +205,7 @@ export async function parseVideo(url) {
   const rawData = await parseBilibiliVideo(url)
   const formattedData = formatBilibiliVideoInfo(rawData)
   
-  // 转换为前端需要的格式（兼容旧格式）
+  // 转换为前端需要的格式
   return {
     videoInfo: {
       title: formattedData.title,

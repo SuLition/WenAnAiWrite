@@ -62,51 +62,75 @@ ${hashedRequestPayload}`
 }
 
 /**
- * 调用腾讯云 API
+ * 调用腾讯云 API（带重试机制）
  */
-async function callTencentApi(action, params) {
+async function callTencentApi(action, params, retries = 3) {
   const config = getConfig()
   
   if (!config.secretId || !config.secretKey) {
     throw new Error('请先配置腾讯云 SecretId 和 SecretKey')
   }
   
-  const timestamp = Math.floor(Date.now() / 1000)
-  const payload = JSON.stringify(params)
-  const authorization = generateSign(payload, action, timestamp)
+  let lastError
   
-  // 使用后端代理
-  const response = await fetch(`${SERVICE_URL}/proxy/tencent`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      url: 'https://asr.tencentcloudapi.com',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Host': config.host,
-        'X-TC-Action': action,
-        'X-TC-Version': '2019-06-14',
-        'X-TC-Timestamp': timestamp.toString(),
-        'X-TC-Region': config.region,
-        'Authorization': authorization
-      },
-      body: payload
-    })
-  })
-  
-  const proxyResult = await response.json()
-  if (!proxyResult.success) {
-    throw new Error(proxyResult.message || '代理请求失败')
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const timestamp = Math.floor(Date.now() / 1000)
+      const payload = JSON.stringify(params)
+      const authorization = generateSign(payload, action, timestamp)
+      
+      // 使用后端代理
+      const response = await fetch(`${SERVICE_URL}/proxy/tencent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: 'https://asr.tencentcloudapi.com',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Host': config.host,
+            'X-TC-Action': action,
+            'X-TC-Version': '2019-06-14',
+            'X-TC-Timestamp': timestamp.toString(),
+            'X-TC-Region': config.region,
+            'Authorization': authorization
+          },
+          body: payload
+        })
+      })
+      
+      const proxyResult = await response.json()
+      if (!proxyResult.success) {
+        throw new Error(proxyResult.message || '代理请求失败')
+      }
+      
+      const result = proxyResult.data
+      
+      if (result.Response?.Error) {
+        throw new Error(`${result.Response.Error.Code}: ${result.Response.Error.Message}`)
+      }
+      
+      return result.Response
+      
+    } catch (error) {
+      lastError = error
+      const isNetworkError = error.message.includes('SSL') || 
+                             error.message.includes('network') ||
+                             error.message.includes('ECONNRESET') ||
+                             error.message.includes('fetch')
+      
+      // 网络错误且未达到最大重试次数时，重试
+      if (isNetworkError && attempt < retries) {
+        console.warn(`[TencentASR] 第${attempt}次请求失败，${attempt}s后重试:`, error.message)
+        await new Promise(resolve => setTimeout(resolve, attempt * 1000))
+        continue
+      }
+      
+      throw error
+    }
   }
   
-  const result = proxyResult.data
-  
-  if (result.Response?.Error) {
-    throw new Error(`${result.Response.Error.Code}: ${result.Response.Error.Message}`)
-  }
-  
-  return result.Response
+  throw lastError
 }
 
 /**

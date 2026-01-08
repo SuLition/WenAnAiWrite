@@ -1,7 +1,9 @@
 <script setup>
 import { watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { toast } from 'vue-sonner';
 import { useVideoParse } from './composables/useVideoParse.js';
+import { useHistoryStore } from '@/stores';
 import ParseInputBar from './components/ParseInputBar.vue';
 import VideoResultCard from './components/VideoResultCard.vue';
 import CopywritingPanel from './components/CopywritingPanel.vue';
@@ -9,6 +11,7 @@ import ParseEmpty from './components/ParseEmpty.vue';
 import ParseLoading from './components/ParseLoading.vue';
 
 const route = useRoute();
+const historyStore = useHistoryStore();
 
 const {
   videoUrl,
@@ -18,18 +21,56 @@ const {
   qualityOptions,
   selectedQuality,
   currentHistoryId,
+  isRestoring,
   handleParse,
   clearInput,
-  resetState
+  resetState,
+  restoreFromHistory
 } = useVideoParse();
 
-// 平台切换时重置状态
+// 平台切换时重置状态（恢复模式下跳过）
 watch(platform, () => {
-  resetState();
+  if (!isRestoring.value) {
+    resetState();
+  }
 });
 
-// 初始化：检查是否有传入的参数（来自历史记录重新解析）
-onMounted(() => {
+// 初始化：检查是否有传入的参数
+onMounted(async () => {
+  console.log('[ParsePage] onMounted, route.query:', route.query);
+  
+  // 优先处理“查看记录”模式（直接恢复已存储的数据）
+  if (route.query.historyId) {
+    console.log('[ParsePage] 有 historyId:', route.query.historyId);
+    await historyStore.load();
+    console.log('[ParsePage] historyStore.list:', historyStore.list);
+    
+    const historyItem = historyStore.findById(Number(route.query.historyId));
+    console.log('[ParsePage] 查找到的 historyItem:', historyItem);
+    
+    if (historyItem) {
+      console.log('[ParsePage] historyItem.videoInfo:', historyItem.videoInfo);
+      console.log('[ParsePage] historyItem.qualityOptions:', historyItem.qualityOptions);
+      
+      const restored = await restoreFromHistory(historyItem);
+      console.log('[ParsePage] restoreFromHistory 返回:', restored);
+      console.log('[ParsePage] 恢复后 videoInfo.value:', videoInfo.value);
+      
+      if (restored) {
+        return;
+      }
+      // 恢复失败，旧数据不完整，重新解析
+      toast.info('历史数据不完整，正在重新解析...');
+      videoUrl.value = historyItem.originalUrl || '';
+      platform.value = historyItem.platform || 'auto';
+      handleParse();
+      return;
+    } else {
+      console.log('[ParsePage] 未找到匹配的历史记录');
+    }
+  }
+  
+  // 处理“重新解析”模式（传入 url 重新发起解析）
   if (route.query.url) {
     videoUrl.value = route.query.url;
     if (route.query.platform) {

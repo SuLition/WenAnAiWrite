@@ -34,6 +34,11 @@ export const defaultConfig = {
     maxRecords: 100  // 最大记录数量
   },
   
+  // 任务队列设置
+  taskQueue: {
+    maxConcurrent: 3  // 最大并行任务数
+  },
+  
   // 腾讯语音识别配置
   tencentAsr: {
     secretId: '',

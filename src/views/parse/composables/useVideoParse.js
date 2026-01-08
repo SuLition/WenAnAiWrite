@@ -1,7 +1,7 @@
 /**
  * 视频解析组合式函数
  */
-import {ref} from 'vue';
+import {ref, nextTick} from 'vue';
 import {toast} from 'vue-sonner';
 import {parseVideo as parseBilibiliVideoApi} from '@/services/api/bilibiliApi.js';
 import {parseVideo as parseDouyinVideoApi} from '@/services/api/douyinApi.js';
@@ -23,6 +23,7 @@ export function useVideoParse() {
     const qualityOptions = ref([]);
     const selectedQuality = ref('');
     const currentHistoryId = ref(null);
+    const isRestoring = ref(false); // 恢复模式标志，防止 watch 触发 resetState
 
     // Store
     const historyStore = useHistoryStore();
@@ -111,7 +112,7 @@ export function useVideoParse() {
                 throw new Error(`${targetPlatform} 解析功能开发中...`);
             }
 
-            // 保存到历史记录
+            // 保存到历史记录（包含完整信息用于恢复展示）
             if (videoInfo.value) {
                 const videoId = videoInfo.value.bvid || videoInfo.value.awemeId || videoInfo.value.noteId || '';
 
@@ -122,7 +123,11 @@ export function useVideoParse() {
                     originalUrl: videoUrl.value,
                     originalText: '',
                     rewrittenText: '',
-                    videoId: videoId
+                    videoId: videoId,
+                    // 完整信息用于“查看记录”时恢复
+                    videoInfo: JSON.parse(JSON.stringify(videoInfo.value)),
+                    qualityOptions: JSON.parse(JSON.stringify(qualityOptions.value)),
+                    selectedQuality: selectedQuality.value
                 });
                 currentHistoryId.value = historyId;
             }
@@ -153,6 +158,57 @@ export function useVideoParse() {
         currentHistoryId.value = null;
     };
 
+    /**
+     * 从历史记录恢复状态（用于“查看记录”功能）
+     */
+    const restoreFromHistory = async (historyItem) => {
+        console.log('[restoreFromHistory] 开始恢复, historyItem:', historyItem);
+        
+        if (!historyItem) {
+            console.log('[restoreFromHistory] historyItem 为空');
+            return false;
+        }
+
+        // 进入恢复模式，防止 platform watch 触发 resetState
+        isRestoring.value = true;
+        console.log('[restoreFromHistory] 进入恢复模式');
+
+        // 恢复基本信息
+        videoUrl.value = historyItem.originalUrl || '';
+        platform.value = historyItem.platform || 'auto';
+        currentHistoryId.value = historyItem.id;
+        console.log('[restoreFromHistory] 基本信息已恢复:', { videoUrl: videoUrl.value, platform: platform.value, currentHistoryId: currentHistoryId.value });
+
+        // 恢复完整视频信息
+        if (historyItem.videoInfo) {
+            console.log('[restoreFromHistory] 有 videoInfo, 正在赋值');
+            videoInfo.value = historyItem.videoInfo;
+            console.log('[restoreFromHistory] videoInfo.value 已设置:', videoInfo.value);
+        } else {
+            // 旧数据不完整，直接返回失败
+            console.log('[restoreFromHistory] 无 videoInfo, 返回失败');
+            isRestoring.value = false;
+            return false;
+        }
+
+        // 恢复画质选项
+        if (historyItem.qualityOptions && historyItem.qualityOptions.length > 0) {
+            qualityOptions.value = historyItem.qualityOptions;
+            selectedQuality.value = historyItem.selectedQuality || qualityOptions.value[0]?.value || '';
+            console.log('[restoreFromHistory] 画质选项已恢复:', qualityOptions.value);
+        } else {
+            qualityOptions.value = [];
+            selectedQuality.value = '';
+            console.log('[restoreFromHistory] 无画质选项');
+        }
+
+        // 退出恢复模式（延迟到下一个 tick，确保 watch 回调已执行）
+        await nextTick();
+        isRestoring.value = false;
+        console.log('[restoreFromHistory] 恢复完成, 最终 videoInfo.value:', videoInfo.value);
+        return true;
+    };
+
     return {
         // 状态
         videoUrl,
@@ -162,9 +218,11 @@ export function useVideoParse() {
         qualityOptions,
         selectedQuality,
         currentHistoryId,
+        isRestoring, // 暴露恢复模式标志
         // 方法
         handleParse,
         clearInput,
-        resetState
+        resetState,
+        restoreFromHistory
     };
 }

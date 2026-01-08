@@ -35,6 +35,27 @@ const pageTransition = computed({
   }
 })
 
+// 任务队列并行数
+const maxConcurrent = computed({
+  get: () => configStore.config.taskQueue?.maxConcurrent ?? 3,
+  set: (val) => {
+    const num = parseInt(val, 10)
+    if (num >= 1 && num <= 10) {
+      configStore.update('taskQueue.maxConcurrent', num)
+      toast.success(`并行任务数已设置为 ${num}`)
+    }
+  }
+})
+
+// 并行任务数选项
+const CONCURRENT_OPTIONS = [
+  { value: 1, label: '1 个' },
+  { value: 2, label: '2 个' },
+  { value: 3, label: '3 个' },
+  { value: 5, label: '5 个' },
+  { value: 10, label: '10 个' }
+]
+
 const autoCheckUpdate = computed({
   get: () => configStore.config.update?.autoCheck ?? true,
   set: (val) => {
@@ -129,6 +150,22 @@ const checkUpdateNow = async () => {
                       class="setting-select" @change="onTransitionChange"/>
       </div>
       <p class="setting-hint">切换页面时的动画效果</p>
+    </div>
+
+    <!-- 任务并行数 -->
+    <div class="setting-group">
+      <div class="setting-item">
+        <div class="setting-row">
+          <svg class="setting-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="4" rx="1"/>
+            <rect x="3" y="10" width="18" height="4" rx="1"/>
+            <rect x="3" y="16" width="18" height="4" rx="1"/>
+          </svg>
+          <span class="setting-label">并行任务数</span>
+        </div>
+        <CustomSelect v-model="maxConcurrent" :options="CONCURRENT_OPTIONS" class="setting-select"/>
+      </div>
+      <p class="setting-hint">同时执行的最大任务数量，建议 3 个</p>
     </div>
 
     <!-- 自动检查更新 -->

@@ -1,12 +1,13 @@
 <script setup>
-import {ref, computed, watch, onUnmounted, nextTick} from 'vue';
+import {ref, computed, watch, onUnmounted, onMounted, nextTick} from 'vue';
 import {toast} from 'vue-sonner';
+import {useRouter} from 'vue-router';
 import CustomSelect from '@/components/common/CustomSelect.vue';
 import {AI_MODELS, REWRITE_STYLES, DEFAULT_PROMPTS} from '@/constants/options.js';
 import {recognizeAudioWithData} from '@/services/tencentAsr.js';
 import {rewriteText} from '@/services/aiRewrite.js';
 import {downloadAudioData} from '@/services/download/downloadService.js';
-import {useHistoryStore} from '@/stores';
+import {useHistoryStore, useTaskQueueStore} from '@/stores';
 
 const props = defineProps({
   videoInfo: {
@@ -43,6 +44,35 @@ const progressRef = ref(null);
 
 // Store
 const historyStore = useHistoryStore();
+const taskQueueStore = useTaskQueueStore();
+const router = useRouter();
+
+// 当 currentHistoryId 变化时，从历史记录加载文案
+watch(() => props.currentHistoryId, async (newId) => {
+  if (newId) {
+    console.log('[CopywritingPanel] currentHistoryId 变化:', newId);
+    await historyStore.load();
+    const historyItem = historyStore.findById(newId);
+    console.log('[CopywritingPanel] 查找到的历史记录:', historyItem);
+    
+    if (historyItem) {
+      // 优先显示改写后的文案，其次是原始文案
+      if (historyItem.rewrittenText) {
+        copyText.value = historyItem.rewrittenText;
+        copyMode.value = 'rewritten';
+        console.log('[CopywritingPanel] 加载改写文案');
+      } else if (historyItem.originalText) {
+        copyText.value = historyItem.originalText;
+        copyMode.value = 'original';
+        console.log('[CopywritingPanel] 加载原始文案');
+      } else {
+        copyText.value = '';
+        copyMode.value = 'original';
+        console.log('[CopywritingPanel] 无文案数据');
+      }
+    }
+  }
+}, { immediate: true });
 
 // 获取音频URL
 const audioUrl = computed(() => {
@@ -235,125 +265,24 @@ const handleExtractCopy = async () => {
     return;
   }
 
-  isExtracting.value = true;
-  copyMode.value = 'original';
-  copyText.value = '正在提取文案...';
-
-  try {
-    let result = '';
-
-    if (props.videoInfo.platform === 'bilibili') {
-      const audioStream = props.videoInfo.audioStream;
-      let audioUrl = audioStream?.url;
-      const backupUrls = audioStream?.backupUrl || [];
-
-      const isPcdn = audioUrl && (audioUrl.includes('mcdn.bilivideo') || audioUrl.includes('.szbdyd.com'));
-      if (isPcdn && backupUrls.length > 0) {
-        audioUrl = backupUrls[0];
-      }
-
-      if (!audioUrl) {
-        throw new Error('未获取到B站音频链接');
-      }
-
-      const audioData = await downloadAudioData(audioUrl, 'bilibili', () => {
-      });
-      const MAX_SIZE = 5 * 1024 * 1024;
-      const finalData = audioData.length > MAX_SIZE ? audioData.slice(0, MAX_SIZE) : audioData;
-
-      const chunkSize = 32768;
-      let binary = '';
-      for (let i = 0; i < finalData.length; i += chunkSize) {
-        const chunk = finalData.subarray(i, Math.min(i + chunkSize, finalData.length));
-        binary += String.fromCharCode.apply(null, chunk);
-      }
-      const base64Data = btoa(binary);
-
-      result = await recognizeAudioWithData(base64Data, () => {
-      });
-    } else if (props.videoInfo.platform === 'douyin') {
-      const audioStream = props.videoInfo.audioStream;
-      let audioUrl = audioStream?.url;
-      const isVideoAudio = audioStream?.isVideoAudio || false;
-
-      if (!audioUrl) {
-        throw new Error('未获取到抖音音频链接');
-      }
-
-      let base64Data = '';
-
-      if (isVideoAudio) {
-        const extractResponse = await fetch('http://127.0.0.1:3721/extract-audio', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({video_url: audioUrl, platform: 'douyin'})
-        });
-
-        const extractResult = await extractResponse.json();
-        if (!extractResult.success) {
-          throw new Error(extractResult.message || '音频提取失败');
-        }
-
-        base64Data = extractResult.audio_base64;
-      } else {
-        const audioData = await downloadAudioData(audioUrl, 'douyin', () => {
-        });
-        const MAX_SIZE = 5 * 1024 * 1024;
-        const finalData = audioData.length > MAX_SIZE ? audioData.slice(0, MAX_SIZE) : audioData;
-
-        const chunkSize = 32768;
-        let binary = '';
-        for (let i = 0; i < finalData.length; i += chunkSize) {
-          const chunk = finalData.subarray(i, Math.min(i + chunkSize, finalData.length));
-          binary += String.fromCharCode.apply(null, chunk);
-        }
-        base64Data = btoa(binary);
-      }
-
-      result = await recognizeAudioWithData(base64Data, () => {
-      });
-    } else if (props.videoInfo.platform === 'xiaohongshu') {
-      if (!props.videoInfo.isVideo) {
-        throw new Error('图文笔记不支持文案提取');
-      }
-
-      const videoUrl = props.videoInfo.audioStream?.url || props.videoInfo.videoUrl;
-      if (!videoUrl) {
-        throw new Error('未获取到小红书视频链接');
-      }
-
-      const extractResponse = await fetch('http://127.0.0.1:3721/extract-audio', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({video_url: videoUrl, platform: 'xiaohongshu'})
-      });
-
-      const extractResult = await extractResponse.json();
-      if (!extractResult.success) {
-        throw new Error(extractResult.message || '音频提取失败');
-      }
-
-      const base64Data = extractResult.audio_base64;
-      result = await recognizeAudioWithData(base64Data, () => {
-      });
-    } else {
-      throw new Error('该平台文案提取服务开发中');
-    }
-
-    copyText.value = result || '未识别到语音内容';
-
-    if (props.currentHistoryId && result) {
-      await historyStore.update(props.currentHistoryId, {originalText: result});
-    }
-
-    toast.success('文案提取完成');
-  } catch (error) {
-    console.error('语音识别失败:', error);
-    copyText.value = '';
-    toast.error(`识别失败: ${error.message}`);
-  } finally {
-    isExtracting.value = false;
+  if (!props.currentHistoryId) {
+    toast.warning('无效的历史记录');
+    return;
   }
+
+  // 创建后台任务
+  taskQueueStore.addTask({
+    type: 'extract',
+    historyId: props.currentHistoryId,
+    videoInfo: JSON.parse(JSON.stringify(props.videoInfo))
+  });
+
+  toast.success('文案提取任务已添加到队列', {
+    action: {
+      label: '查看队列',
+      onClick: () => router.push('/task-queue')
+    }
+  });
 };
 
 const handleRewrite = async () => {
@@ -362,24 +291,29 @@ const handleRewrite = async () => {
     return;
   }
 
-  isRewriting.value = true;
-
-  try {
-    const result = await rewriteText(copyText.value, rewriteStyle.value, aiModel.value);
-    copyMode.value = 'rewritten';
-    copyText.value = result;
-
-    if (props.currentHistoryId) {
-      await historyStore.update(props.currentHistoryId, {rewrittenText: result});
-    }
-
-    toast.success('改写完成');
-  } catch (error) {
-    console.error('改写失败:', error);
-    toast.error(error.message || '改写失败，请重试');
-  } finally {
-    isRewriting.value = false;
+  if (!props.currentHistoryId) {
+    toast.warning('无效的历史记录');
+    return;
   }
+
+  // 创建后台任务
+  taskQueueStore.addTask({
+    type: 'rewrite',
+    historyId: props.currentHistoryId,
+    videoInfo: JSON.parse(JSON.stringify(props.videoInfo)),
+    params: {
+      aiModel: aiModel.value,
+      rewriteStyle: rewriteStyle.value,
+      customPrompt: customPrompt.value
+    }
+  });
+
+  toast.success('文案改写任务已添加到队列', {
+    action: {
+      label: '查看队列',
+      onClick: () => router.push('/task-queue')
+    }
+  });
 };
 
 const handleCopy = () => {

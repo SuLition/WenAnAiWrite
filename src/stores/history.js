@@ -23,7 +23,9 @@ export const useHistoryStore = defineStore('history', {
     // 记录数量
     count: (state) => state.list.length,
     // 是否为空
-    isEmpty: (state) => state.list.length === 0
+    isEmpty: (state) => state.list.length === 0,
+    // 根据ID获取记录
+    getById: (state) => (id) => state.list.find(item => item.id === id)
   },
 
   actions: {
@@ -96,6 +98,16 @@ export const useHistoryStore = defineStore('history', {
 
     /**
      * 添加历史记录
+     * @param {Object} record - 历史记录对象
+     * @param {string} record.cover - 封面图
+     * @param {string} record.title - 标题
+     * @param {string} record.platform - 平台
+     * @param {string} record.originalUrl - 原始链接
+     * @param {string} record.videoId - 视频ID
+     * @param {string} record.originalText - 原始文案
+     * @param {string} record.rewrittenText - 改写文案
+     * @param {Object} record.videoInfo - 完整视频信息（新增）
+     * @param {Array} record.qualityOptions - 画质选项（新增）
      */
     async add(record) {
       // 根据 videoId 和 platform 去重
@@ -154,8 +166,19 @@ export const useHistoryStore = defineStore('history', {
       const index = this.list.findIndex(item => item.id === id)
       if (index === -1) return false
 
-      this.list[index] = { ...this.list[index], ...updates }
+      this.list[index] = { 
+        ...this.list[index], 
+        ...updates,
+        updatedAt: Date.now()
+      }
       return await this._save()
+    },
+
+    /**
+     * 根据ID查找记录
+     */
+    findById(id) {
+      return this.list.find(item => item.id === id)
     }
   }
 })

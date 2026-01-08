@@ -23,11 +23,11 @@ const handleDelete = async (id) => {
   toast.success('已删除');
 };
 
-// 重新解析
-const handleReparse = (item) => {
+// 查看记录（跳转到解析页面并恢复展示）
+const handleViewRecord = (item) => {
   router.push({
     path: '/parse',
-    query: {url: item.originalUrl, platform: item.platform}
+    query: { historyId: item.id }
   });
 };
 
@@ -130,7 +130,7 @@ const clearAll = async () => {
           <div class="card-footer">
             <span class="create-time">{{ item.createTime }}</span>
             <div class="card-actions">
-              <button class="action-btn primary" @click="handleReparse(item)">重新解析</button>
+              <button class="action-btn primary" @click="handleViewRecord(item)">查看记录</button>
               <button class="action-btn danger" title="删除" @click="handleDelete(item.id)">
                 <svg fill="none" height="16" viewBox="0 0 24 24" width="16">
                   <path

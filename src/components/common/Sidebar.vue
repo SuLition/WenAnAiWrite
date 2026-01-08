@@ -1,14 +1,18 @@
 <script setup>
 import {computed} from 'vue';
 import {useRouter, useRoute} from 'vue-router';
-import {useThemeStore} from '@/stores';
+import {useThemeStore, useTaskQueueStore} from '@/stores';
 
 const router = useRouter();
 const route = useRoute();
 
 // Store
 const themeStore = useThemeStore();
+const taskQueueStore = useTaskQueueStore();
 const isDark = computed(() => themeStore.isDark);
+
+// 待处理任务数（排队中 + 进行中）
+const pendingTaskCount = computed(() => taskQueueStore.pendingTasks.length + taskQueueStore.runningTasks.length);
 
 // 判断菜单是否激活（支持子路由匹配）
 const isActive = (path) => {
@@ -20,6 +24,7 @@ const isActive = (path) => {
 
 const topMenuItems = [
   {id: '/parse', icon: 'search', title: '视频解析'},
+  {id: '/task-queue', icon: 'queue', title: '任务队列'},
   {id: '/history', icon: 'history', title: '下载历史'}
 ];
 
@@ -61,6 +66,17 @@ const handleToggleTheme = () => {
           <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
           <path d="M16 16L21 21" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
         </svg>
+
+        <svg v-else-if="item.icon === 'queue'" class="sidebar-icon" fill="none" viewBox="0 0 24 24"
+             xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="4" width="18" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
+          <rect x="3" y="10" width="18" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
+          <rect x="3" y="16" width="18" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <!-- 任务数角标 -->
+        <span v-if="item.icon === 'queue' && pendingTaskCount > 0" class="task-badge">
+          {{ pendingTaskCount > 99 ? '99+' : pendingTaskCount }}
+        </span>
 
         <svg v-else-if="item.icon === 'history'" class="sidebar-icon" fill="none" viewBox="0 0 24 24"
              xmlns="http://www.w3.org/2000/svg">
@@ -213,5 +229,26 @@ const handleToggleTheme = () => {
 .sidebar-icon {
   width: 24px;
   height: 24px;
+}
+
+.task-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  color: #fff;
+  background: var(--accent-color);
+  border-radius: 8px;
+}
+
+.sidebar-item.active .task-badge {
+  background: #fff;
+  color: var(--accent-color);
 }
 </style>

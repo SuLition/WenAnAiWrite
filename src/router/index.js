@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { ParsePage, HistoryPage } from '@/views';
+import { ParsePage, HistoryPage, TaskQueuePage } from '@/views';
 import SettingsLayout from '@/views/settings/SettingsLayout.vue';
 import GeneralSettings from '@/views/settings/GeneralSettings.vue';
 import StorageSettings from '@/views/settings/StorageSettings.vue';
@@ -23,6 +23,12 @@ const routes = [
     name: 'History',
     component: HistoryPage,
     meta: { title: '下载历史' }
+  },
+  {
+    path: '/task-queue',
+    name: 'TaskQueue',
+    component: TaskQueuePage,
+    meta: { title: '任务队列' }
   },
   {
     path: '/settings',
