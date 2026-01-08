@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "WenAnAssistant",
+  "productName": "CatParse",
   "version": "0.2.6",
-  "identifier": "com.wenanassistant.app",
+  "identifier": "com.catparse.app",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:15173",
@@ -14,7 +14,7 @@
       {
         "minWidth": 1080,
         "minHeight": 760,
-        "title": "文案助手",
+        "title": "CatParse",
         "label": "main",
         "width": 960,
         "height": 680,
@@ -52,7 +52,7 @@
       "dialog": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IERBMjQ0MjRGOTc4RDAwRkYKUldUL0FJMlhUMElrMnMyNXl3ZlBjbWFtdVFsVXFtWVNLMnFWZ21iVCtUdGNrdEpndjJha1lJdDcK",
       "endpoints": [
-        "https://github.com/SuLition/WenAnAiWrite/releases/latest/download/latest.json"
+        "https://github.com/SuLition/CatParse/releases/latest/download/latest.json"
       ]
     }
   }

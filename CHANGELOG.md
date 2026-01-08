@@ -87,7 +87,7 @@
 ### 优化
 
 - **本地文件存储**：配置数据从 WebView localStorage 迁移到本地文件存储（AppData 目录），重装应用不再丢失配置
-- **项目标识统一**：更名为 WenAnAssistant（文案助手），修正旧的 douyintools 标识
+- **项目标识统一**：更名为 CatParse，修正旧的 douyintools 标识
 - **Pinia 状态管理**：使用 Pinia 统一管理应用状态，替代直接存储调用
 
 ### 修复

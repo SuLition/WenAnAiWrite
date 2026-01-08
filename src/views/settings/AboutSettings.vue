@@ -4,7 +4,7 @@ import {getVersion} from '@tauri-apps/api/app'
 import {open} from '@tauri-apps/plugin-shell'
 
 const version = ref('0.0.0')
-const GITHUB_URL = 'https://github.com/SuLition/WenAnAiWrite'
+const GITHUB_URL = 'https://github.com/SuLition/CatParse'
 
 onMounted(async () => {
   try {
@@ -28,10 +28,10 @@ const openGitHub = async () => {
     <!-- 应用信息 -->
     <div class="about-header">
       <div class="app-logo">
-        <span class="logo-text">姜</span>
+        <span class="logo-text">🐱</span>
       </div>
       <div class="app-info">
-        <h2 class="app-name">文案助手</h2>
+        <h2 class="app-name">CatParse</h2>
         <span class="app-version">v{{ version }}</span>
       </div>
     </div>
@@ -39,7 +39,7 @@ const openGitHub = async () => {
     <!-- 应用描述 -->
     <div class="about-section">
       <p class="app-desc">
-        文案助手是一款 AI 驱动的文案写作工具，支持多平台视频解析、文案提取与智能改写，
+        CatParse 是一款 AI 驱动的视频解析工具，支持多平台视频解析、文案提取与智能改写，
         帮助创作者快速生成高质量内容。
       </p>
     </div>
@@ -106,7 +106,7 @@ const openGitHub = async () => {
 
     <!-- 版权信息 -->
     <div class="about-footer">
-      <p class="copyright">© 2024-2025 文案助手. MIT License.</p>
+      <p class="copyright">© 2024-2025 CatParse. MIT License.</p>
     </div>
   </div>
 </template>

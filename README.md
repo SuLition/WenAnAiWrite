@@ -1,11 +1,11 @@
-# 文案助手
+# CatParse
 
 <p align="center">
-  <img src="src-tauri/icons/icon.ico" width="128" height="128" alt="文案助手">
+  <img src="src-tauri/icons/icon.ico" width="128" height="128" alt="CatParse">
 </p>
 
 <p align="center">
-  一个基于 Vue 3 和 Tauri 2 构建的视频解析、文案提取与 AI 改写工具
+  一个基于 Vue 3 和 Tauri 2 构建的视频解析、文案提取与 AI 改写工具 - CatParse
 </p>
 
 <p align="center">
@@ -143,7 +143,7 @@ npm run build:all
 ### 签名配置 (用于打包)
 
 ```cmd
-set TAURI_SIGNING_PRIVATE_KEY=C:\Users\xxx\.tauri\wenan-helper.key
+set TAURI_SIGNING_PRIVATE_KEY=C:\Users\xxx\.tauri\catparse.key
 set TAURI_SIGNING_PRIVATE_KEY_PASSWORD=your_password
 npm run tauri:build
 ```
@@ -151,10 +151,10 @@ npm run tauri:build
 ### 生成签名密钥
 
 ```bash
-npx tauri signer generate -w ~/.tauri/wenan-helper.key
+npx tauri signer generate -w ~/.tauri/catparse.key
 ```
 
-配置文件存储在 `%APPDATA%\com.wenanassistant.app\` 目录下，重装应用不会丢失配置。
+配置文件存储在 `%APPDATA%\com.catparse.app\` 目录下，重装应用不会丢失配置。
 
 ## 许可证
 
