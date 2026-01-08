@@ -8,12 +8,17 @@ use std::process::{Child, Command, Stdio};
 use std::sync::Mutex;
 use tauri::Emitter;
 use tauri::Manager;
+use tauri::tray::{TrayIconBuilder, MouseButton, MouseButtonState};
+use tauri::menu::{Menu, MenuItem};
 
 #[cfg(target_os = "windows")]
 use window_vibrancy::{apply_mica, clear_mica};
 
 // 全局后端服务进程句柄
 static BACKEND_SERVICE: Mutex<Option<Child>> = Mutex::new(None);
+
+// 全局关闭行为设置: "exit" 或 "minimize"
+static CLOSE_ACTION: Mutex<String> = Mutex::new(String::new());
 
 #[derive(Clone, Serialize)]
 struct DownloadProgress {
@@ -427,6 +432,22 @@ fn start_backend_service(app_handle: &tauri::AppHandle) {
         std::thread::spawn(move || {
             println!("[后端服务] 启动 Python 服务: {:?}", main_py);
             
+            #[cfg(target_os = "windows")]
+            let child_result = {
+                use std::os::windows::process::CommandExt;
+                const CREATE_NO_WINDOW: u32 = 0x08000000;
+                const DETACHED_PROCESS: u32 = 0x00000008;
+                Command::new("python")
+                    .arg(&main_py)
+                    .current_dir(&backend_dir)
+                    .creation_flags(CREATE_NO_WINDOW | DETACHED_PROCESS)
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .stdin(Stdio::null())
+                    .spawn()
+            };
+            
+            #[cfg(not(target_os = "windows"))]
             let child_result = Command::new("python")
                 .arg(&main_py)
                 .current_dir(&backend_dir)
@@ -605,6 +626,22 @@ async fn start_backend(app: tauri::AppHandle) -> Result<String, String> {
             return Err(format!("main.py 不存在: {:?}", main_py));
         }
         
+        #[cfg(target_os = "windows")]
+        let child_result = {
+            use std::os::windows::process::CommandExt;
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
+            const DETACHED_PROCESS: u32 = 0x00000008;
+            Command::new("python")
+                .arg(&main_py)
+                .current_dir(&backend_dir)
+                .creation_flags(CREATE_NO_WINDOW | DETACHED_PROCESS)
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .stdin(Stdio::null())
+                .spawn()
+        };
+        
+        #[cfg(not(target_os = "windows"))]
         let child_result = Command::new("python")
             .arg(&main_py)
             .current_dir(&backend_dir)
@@ -704,6 +741,48 @@ async fn set_window_effect(
     }
 }
 
+/// 设置关闭行为
+/// action: "exit" | "minimize"
+#[tauri::command]
+async fn set_close_action(app: tauri::AppHandle, action: String) -> Result<String, String> {
+    // 更新全局状态
+    {
+        let mut close_action = CLOSE_ACTION.lock().unwrap();
+        *close_action = action.clone();
+    }
+    
+    // 获取配置创建的托盘
+    if let Some(tray) = app.tray_by_id("main-tray") {
+        if action == "minimize" {
+            // 设置托盘菜单和事件
+            setup_tray_menu(&app, &tray).map_err(|e| format!("设置托盘菜单失败: {}", e))?;
+            let _ = tray.set_visible(true);
+            Ok("关闭时将最小化到托盘".to_string())
+        } else {
+            // 隐藏托盘
+            let _ = tray.set_visible(false);
+            Ok("关闭时将直接退出".to_string())
+        }
+    } else {
+        Err("未找到系统托盘".to_string())
+    }
+}
+
+/// 设置托盘菜单
+fn setup_tray_menu(app: &tauri::AppHandle, tray: &tauri::tray::TrayIcon<tauri::Wry>) -> Result<(), Box<dyn std::error::Error>> {
+    // 创建菜单项
+    let show_item = MenuItem::with_id(app, "show", "显示窗口", true, None::<&str>)?;
+    let quit_item = MenuItem::with_id(app, "quit", "退出程序", true, None::<&str>)?;
+    
+    // 创建菜单
+    let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
+    
+    // 设置菜单
+    tray.set_menu(Some(menu))?;
+    
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -714,10 +793,45 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         // 进程插件（用于重启应用）
         .plugin(tauri_plugin_process::init())
+        .on_menu_event(|app, event| {
+            match event.id.as_ref() {
+                "show" => {
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                    }
+                }
+                "quit" => {
+                    stop_backend_service();
+                    std::process::exit(0);
+                }
+                _ => {}
+            }
+        })
         .setup(|app| {
             // 在后台线程启动后端服务（不阻塞主窗口显示）
             start_backend_service(app.handle());
             
+            // 初始化托盘（默认隐藏，配置菜单事件）
+            if let Some(tray) = app.tray_by_id("main-tray") {
+                // 默认隐藏托盘
+                let _ = tray.set_visible(false);
+
+                // 设置托盘点击事件
+                tray.on_tray_icon_event(|tray, event| {
+                    if let tauri::tray::TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } = event {
+                        if let Some(window) = tray.app_handle().get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+                    }
+                });
+            }
+
             if cfg!(debug_assertions) {
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()
@@ -729,24 +843,36 @@ pub fn run() {
         })
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                // 阻止立即关闭
-                api.prevent_close();
+                // 检查关闭行为设置
+                let close_action = {
+                    let action = CLOSE_ACTION.lock().unwrap();
+                    action.clone()
+                };
                 
-                // 发送关闭中事件到前端
-                let _ = window.emit("app-closing", ());
-                
-                // 在后台线程停止服务并关闭窗口
-                let window_clone = window.clone();
-                std::thread::spawn(move || {
-                    // 停止后端服务
-                    stop_backend_service();
+                if close_action == "minimize" {
+                    // 最小化到托盘
+                    api.prevent_close();
+                    let _ = window.hide();
+                } else {
+                    // 直接退出
+                    api.prevent_close();
                     
-                    // 稍微延迟确保前端收到事件
-                    std::thread::sleep(std::time::Duration::from_millis(300));
+                    // 发送关闭中事件到前端
+                    let _ = window.emit("app-closing", ());
                     
-                    // 关闭窗口
-                    let _ = window_clone.destroy();
-                });
+                    // 在后台线程停止服务并关闭窗口
+                    let window_clone = window.clone();
+                    std::thread::spawn(move || {
+                        // 停止后端服务
+                        stop_backend_service();
+                        
+                        // 稍微延迟确保前端收到事件
+                        std::thread::sleep(std::time::Duration::from_millis(300));
+                        
+                        // 关闭窗口
+                        let _ = window_clone.destroy();
+                    });
+                }
             }
         })
         .invoke_handler(tauri::generate_handler![
@@ -757,7 +883,8 @@ pub fn run() {
             resolve_redirect,
             start_backend,
             stop_backend,
-            set_window_effect
+            set_window_effect,
+            set_close_action
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -14,8 +14,19 @@ export const PAGE_TRANSITION_OPTIONS = [
   { value: 'zoom', label: '缩放' }
 ]
 
+// 关闭行为选项
+export const CLOSE_ACTION_OPTIONS = [
+  { value: 'exit', label: '直接退出' },
+  { value: 'minimize', label: '最小化到托盘' }
+]
+
 // 应用默认配置
 export const defaultConfig = {
+  // 通用设置
+  general: {
+    closeAction: 'exit'  // 关闭行为: exit = 直接退出, minimize = 最小化到托盘
+  },
+  
   // 外观设置
   appearance: {
     themeMode: 'dark',       // 主题模式: light, dark, system

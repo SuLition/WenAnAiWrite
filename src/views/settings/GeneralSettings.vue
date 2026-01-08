@@ -1,8 +1,9 @@
 <script setup>
 import {ref, computed, onMounted} from 'vue'
 import {toast} from 'vue-sonner'
+import {invoke} from '@tauri-apps/api/core'
 import {useThemeStore, useConfigStore, useUpdateStore} from '@/stores'
-import {PAGE_TRANSITION_OPTIONS} from '@/services/config'
+import {PAGE_TRANSITION_OPTIONS, CLOSE_ACTION_OPTIONS} from '@/services/config'
 import {ACCENT_COLOR_OPTIONS} from '@/constants/theme'
 import {ANIMATION_SPEED_OPTIONS} from '@/constants/animation'
 import CustomSelect from '@/components/common/CustomSelect.vue'
@@ -62,6 +63,22 @@ const autoCheckUpdate = computed({
   set: (val) => {
     configStore.update('update.autoCheck', val)
     toast.success(val ? '已开启自动检查更新' : '已关闭自动检查更新')
+  }
+})
+
+// 关闭行为设置
+const closeToTray = computed({
+  get: () => (configStore.config.general?.closeAction ?? 'exit') === 'minimize',
+  set: async (val) => {
+    const action = val ? 'minimize' : 'exit'
+    await configStore.update('general.closeAction', action)
+    // 同步给 Rust
+    try {
+      await invoke('set_close_action', { action })
+      toast.success(val ? '关闭时将最小化到托盘' : '关闭时将直接退出')
+    } catch (e) {
+      console.error('设置关闭行为失败:', e)
+    }
   }
 })
 
@@ -205,6 +222,24 @@ const checkUpdateNow = async () => {
         <CustomSelect v-model="maxConcurrent" :options="CONCURRENT_OPTIONS" class="setting-select"/>
       </div>
       <p class="setting-hint">同时执行的最大任务数量，建议 3 个</p>
+    </div>
+
+    <!-- 关闭时最小化到托盘 -->
+    <div class="setting-group">
+      <div class="setting-item">
+        <div class="setting-row">
+          <svg class="setting-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M18 15l-6-6-6 6"/>
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+          </svg>
+          <span class="setting-label">关闭时最小化到托盘</span>
+        </div>
+        <label class="switch">
+          <input v-model="closeToTray" type="checkbox">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p class="setting-hint">开启后，点击关闭按钮将最小化到系统托盘而非退出程序</p>
     </div>
 
     <!-- 自动检查更新 -->

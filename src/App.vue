@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted, ref, computed} from 'vue'
 import {Toaster} from 'vue-sonner'
+import {invoke} from '@tauri-apps/api/core'
 import CloseMask from "./components/common/CloseMask.vue";
 import {toasterOptions} from "./utils/index.js";
 import TitleBar from "./components/common/TitleBar.vue";
@@ -32,6 +33,11 @@ onMounted(async () => {
     configStore.initAnimationSpeed()
     // 初始化主题
     await themeStore.init()
+    // 同步关闭行为设置给 Rust
+    const closeAction = configStore.config.general?.closeAction || 'exit'
+    await invoke('set_close_action', { action: closeAction }).catch(e => {
+      console.warn('同步关闭行为设置失败:', e)
+    })
     // 标记初始化完成，显示内容并隐藏加载动画
     initialized.value = true
     document.documentElement.classList.add('app-initialized')
