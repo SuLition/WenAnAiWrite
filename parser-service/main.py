@@ -375,6 +375,71 @@ class ProxyRequest(BaseModel):
     body: Optional[str] = None
 
 
+from fastapi import Query
+from fastapi.responses import StreamingResponse
+
+
+@app.get("/proxy-audio")
+async def proxy_audio(url: str = Query(...), platform: str = Query('bilibili')):
+    """音频代理 - 解决跨域问题"""
+    try:
+        # 根据平台设置请求头
+        if platform == 'bilibili':
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer': 'https://www.bilibili.com',
+                'Origin': 'https://www.bilibili.com',
+            }
+        elif platform == 'douyin':
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer': 'https://www.douyin.com',
+            }
+        elif platform == 'xiaohongshu':
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer': 'https://www.xiaohongshu.com',
+            }
+        else:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            }
+        
+        print(f"[Proxy Audio] Platform: {platform}, URL: {url[:80]}...")
+        
+        # 请求音频
+        resp = requests.get(url, headers=headers, stream=True, timeout=30)
+        resp.raise_for_status()
+        
+        # 获取内容类型
+        content_type = resp.headers.get('Content-Type', 'audio/mpeg')
+        content_length = resp.headers.get('Content-Length')
+        
+        # 返回流式响应
+        def generate():
+            for chunk in resp.iter_content(chunk_size=8192):
+                yield chunk
+        
+        response_headers = {
+            'Accept-Ranges': 'bytes',
+            'Access-Control-Allow-Origin': '*',
+        }
+        if content_length:
+            response_headers['Content-Length'] = content_length
+        
+        return StreamingResponse(
+            generate(),
+            media_type=content_type,
+            headers=response_headers
+        )
+        
+    except requests.exceptions.Timeout:
+        return {'success': False, 'message': '音频请求超时'}
+    except Exception as e:
+        print(f"[Proxy Audio] Error: {e}")
+        return {'success': False, 'message': str(e)}
+
+
 @app.post("/proxy/bilibili")
 async def proxy_bilibili(request: ProxyRequest):
     """B站 API 代理"""

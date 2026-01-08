@@ -220,10 +220,10 @@ onUnmounted(() => {
 
 /* 账号卡片 */
 .account-card {
-  background: var(--bg-secondary, #2b2d30);
+  background: var(--bg-secondary);
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid var(--border-primary, #3d3f43);
+  border: 1px solid var(--border-primary);
 }
 
 .account-card.bilibili {
@@ -247,7 +247,7 @@ onUnmounted(() => {
 .account-name {
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
 }
 
 .status-badge {
@@ -255,8 +255,8 @@ onUnmounted(() => {
   font-size: 12px;
   padding: 4px 10px;
   border-radius: 12px;
-  background: var(--bg-tertiary, #3d3f43);
-  color: var(--text-tertiary, #6c6e73);
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
 }
 
 .status-badge.active {
@@ -266,7 +266,7 @@ onUnmounted(() => {
 
 .account-desc {
   font-size: 13px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
   margin: 0 0 16px 0;
 }
 
@@ -301,7 +301,7 @@ onUnmounted(() => {
 .user-name {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
 }
 
 .user-tags {
@@ -330,14 +330,14 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   flex: 1;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
   font-size: 13px;
 }
 
 .loading-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid var(--border-primary, #3d3f43);
+  border: 2px solid var(--border-primary);
   border-top-color: #fb7299;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -362,7 +362,7 @@ onUnmounted(() => {
 
 .qrcode-tip {
   font-size: 13px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
   margin: 0;
 }
 
@@ -420,7 +420,7 @@ onUnmounted(() => {
 
 .btn-text {
   background: transparent;
-  color: var(--accent-color, #4a9eff);
+  color: var(--accent-color);
   padding: 4px 8px;
 }
 

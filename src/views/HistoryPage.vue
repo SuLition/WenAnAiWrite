@@ -10,7 +10,7 @@ const router = useRouter();
 
 // Store
 const historyStore = useHistoryStore();
-const { list: historyList, loading } = storeToRefs(historyStore);
+const {list: historyList, loading} = storeToRefs(historyStore);
 
 // 加载历史记录
 onMounted(async () => {
@@ -132,10 +132,12 @@ const clearAll = async () => {
             <div class="card-actions">
               <button class="action-btn primary" @click="handleReparse(item)">重新解析</button>
               <button class="action-btn danger" title="删除" @click="handleDelete(item.id)">
-                              <svg fill="none" viewBox="0 0 24 24" width="16" height="16">
-                                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-                              </svg>
-                            </button>
+                <svg fill="none" height="16" viewBox="0 0 24 24" width="16">
+                  <path
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -163,24 +165,24 @@ const clearAll = async () => {
 .page-title {
   font-size: 28px;
   font-weight: 600;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   margin: 0;
 }
 
 .clear-button {
   padding: 8px 16px;
   background: transparent;
-  border: 1px solid var(--border-primary, #3d3f43);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .clear-button:hover {
-  background: var(--bg-tertiary, #3d3f43);
-  color: var(--text-primary, #ffffff);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .empty-state {
@@ -195,12 +197,12 @@ const clearAll = async () => {
 .empty-icon {
   width: 64px;
   height: 64px;
-  color: var(--text-tertiary, #3d3f43);
+  color: var(--text-tertiary);
 }
 
 .empty-text {
   font-size: 16px;
-  color: var(--text-secondary, #6c6e73);
+  color: var(--text-secondary);
 }
 
 .history-list {
@@ -213,16 +215,16 @@ const clearAll = async () => {
 .history-card {
   display: flex;
   gap: 20px;
-  background: var(--bg-secondary, #2b2d30);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 12px;
   padding: 16px;
   transition: all 0.3s;
 }
 
 .history-card:hover {
-  border-color: var(--accent-color, #4a9eff);
-  box-shadow: 0 2px 12px var(--accent-light, rgba(74, 158, 255, 0.1));
+  border-color: var(--accent-color);
+  box-shadow: 0 2px 12px var(--accent-light);
 }
 
 /* 封面图 */
@@ -233,7 +235,7 @@ const clearAll = async () => {
   height: 120px;
   border-radius: 8px;
   overflow: hidden;
-  background: var(--bg-tertiary, #3d3f43);
+  background: var(--bg-tertiary);
 }
 
 .card-cover img {
@@ -248,7 +250,7 @@ const clearAll = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
 }
 
 .cover-placeholder svg {
@@ -278,7 +280,7 @@ const clearAll = async () => {
 .card-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   margin: 0 0 10px 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -295,7 +297,7 @@ const clearAll = async () => {
 .card-text {
   font-size: 13px;
   line-height: 1.6;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -315,10 +317,10 @@ const clearAll = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-tertiary, #3d3f43);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
   cursor: pointer;
   opacity: 0;
   transition: all 0.2s;
@@ -334,8 +336,8 @@ const clearAll = async () => {
 }
 
 .copy-btn:hover {
-  background: var(--accent-color, #4a9eff);
-  border-color: var(--accent-color, #4a9eff);
+  background: var(--accent-color);
+  border-color: var(--accent-color);
   color: #ffffff;
 }
 
@@ -346,12 +348,12 @@ const clearAll = async () => {
   align-items: center;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid var(--border-primary, #3d3f43);
+  border-top: 1px solid var(--border-primary);
 }
 
 .create-time {
   font-size: 12px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
 }
 
 .card-actions {
@@ -368,14 +370,14 @@ const clearAll = async () => {
 }
 
 .action-btn.primary {
-  background: var(--accent-color, #4a9eff);
-  border: 1px solid var(--accent-color, #4a9eff);
+  background: var(--accent-color);
+  border: 1px solid var(--accent-color);
   color: #ffffff;
 }
 
 .action-btn.primary:hover {
-  background: var(--accent-hover, #3d8be8);
-  border-color: var(--accent-hover, #3d8be8);
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .action-btn.danger {
@@ -386,8 +388,8 @@ const clearAll = async () => {
   height: 32px;
   padding: 0;
   background: transparent;
-  border: 1px solid var(--border-primary, #3d3f43);
-  color: var(--text-secondary, #afb1b3);
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
 }
 
 .action-btn.danger svg {

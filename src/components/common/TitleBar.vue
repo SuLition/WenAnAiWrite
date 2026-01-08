@@ -89,12 +89,12 @@ onMounted(() =>
   width: 45px;
   height: 30px;
   font-size: 12px;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
   cursor: pointer;
 }
 
 .title-bar-button:hover {
-  background-color: var(--bg-tertiary, #3d3f43);
+  background-color: var(--bg-tertiary);
 }
 
 .title-bar-button-minimize .title-bar-minimize-icon {

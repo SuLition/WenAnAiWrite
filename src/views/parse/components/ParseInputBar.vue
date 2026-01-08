@@ -1,5 +1,5 @@
 <script setup>
-import { PLATFORMS } from '@/constants/options.js';
+import {PLATFORMS} from '@/constants/options.js';
 import CustomSelect from '@/components/common/CustomSelect.vue';
 
 const props = defineProps({
@@ -21,6 +21,8 @@ const emit = defineEmits(['update:videoUrl', 'update:platform', 'parse', 'clear'
 
 const handleUrlInput = (e) => {
   emit('update:videoUrl', e.target.value);
+  // 输入新内容时自动切换回自动检测
+  emit('update:platform', 'auto');
 };
 
 const handlePlatformChange = (value) => {
@@ -32,6 +34,7 @@ const handleParse = () => {
 };
 
 const handleClear = () => {
+  emit('update:platform', 'auto');
   emit('clear');
 };
 </script>
@@ -83,9 +86,9 @@ const handleClear = () => {
   gap: 12px;
   align-items: center;
   padding: 16px;
-  background: var(--bg-secondary, #2b2d30);
+  background: var(--bg-secondary);
   border-radius: 8px;
-  border: 1px solid var(--border-primary, #3d3f43);
+  border: 1px solid var(--border-primary);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -103,22 +106,22 @@ const handleClear = () => {
 .url-input {
   width: 100%;
   padding: 10px 36px 10px 16px;
-  background: var(--bg-primary, #1e1f22);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   font-size: 14px;
   outline: none;
   transition: all 0.3s;
 }
 
 .url-input:focus {
-  border-color: var(--accent-color, #4a9eff);
-  box-shadow: 0 0 0 3px var(--accent-light, rgba(74, 158, 255, 0.1));
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-light);
 }
 
 .url-input::placeholder {
-  color: var(--text-placeholder, #6c6e73);
+  color: var(--text-placeholder);
 }
 
 .clear-btn {
@@ -133,14 +136,14 @@ const handleClear = () => {
   background: transparent;
   border: none;
   border-radius: 4px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .clear-btn:hover {
-  background: var(--bg-hover, rgba(255, 255, 255, 0.1));
-  color: var(--text-primary, #ffffff);
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .clear-btn svg {
@@ -155,7 +158,7 @@ const handleClear = () => {
   gap: 6px;
   min-width: 100px;
   padding: 10px 24px;
-  background: var(--accent-color, #4a9eff);
+  background: var(--accent-color);
   border: none;
   border-radius: 6px;
   color: #ffffff;
@@ -176,7 +179,7 @@ const handleClear = () => {
 }
 
 .parse-button:hover:not(:disabled) {
-  background: var(--accent-hover, #3d8fe8);
+  background: var(--accent-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
 }
@@ -187,7 +190,11 @@ const handleClear = () => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

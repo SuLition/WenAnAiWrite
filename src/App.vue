@@ -30,14 +30,16 @@ onMounted(async () => {
     await configStore.load()
     // 初始化主题
     await themeStore.init()
-    // 标记初始化完成，显示内容
+    // 标记初始化完成，显示内容并隐藏加载动画
     initialized.value = true
+    document.documentElement.classList.add('app-initialized')
     // 自动检查更新
     updateStore.autoCheck()
   } catch (e) {
     console.error('初始化失败:', e)
     // 即使失败也要显示内容
     initialized.value = true
+    document.documentElement.classList.add('app-initialized')
   }
   // 确保无论如何都显示窗口
   try {
@@ -77,7 +79,7 @@ onMounted(async () => {
 }
 
 html, body, #app {
-  background: var(--bg-primary, #1e1f22);
+  background: var(--bg-primary);
   min-height: 100vh;
   width: 100%;
   height: 100%;
@@ -152,9 +154,9 @@ select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-color: var(--bg-primary, #1e1f22);
-  color: var(--text-primary, #ffffff);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
   padding: 8px 32px 8px 12px;
   font-size: 14px;
@@ -167,24 +169,24 @@ select {
 }
 
 select:hover {
-  border-color: var(--accent-color, #4a9eff);
+  border-color: var(--accent-color);
 }
 
 select:focus {
-  border-color: var(--accent-color, #4a9eff);
-  box-shadow: 0 0 0 2px var(--accent-light, rgba(74, 158, 255, 0.15));
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-light);
 }
 
 /*noinspection CssUnresolvedCustomProperty*/
 select option {
-  background-color: var(--bg-secondary, #2b2d30);
-  color: var(--text-primary, #ffffff);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   padding: 10px 12px;
 }
 
 select option:hover,
 select option:checked {
-  background-color: var(--accent-color, #4a9eff);
+  background-color: var(--accent-color);
   color: #ffffff;
 }
 

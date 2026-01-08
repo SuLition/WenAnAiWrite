@@ -1,14 +1,140 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="referrer" content="no-referrer" />
+<head>
+    <meta charset="UTF-8"/>
+    <link href="/vite.svg" rel="icon" type="image/svg+xml"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta content="no-referrer" name="referrer"/>
     <title>姜导工具箱</title>
-  </head>
-  <body style="margin:0;padding:0;min-height:100vh">
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+    <style>
+        /* 初始加载屏 */
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            transition: opacity 0.3s ease;
+        }
+
+        html.app-initialized .loading-screen {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 蜂巢动画 */
+        @keyframes honeycomb {
+            0%, 20%, 80%, 100% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            30%, 70% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .honeycomb {
+            height: 24px;
+            position: relative;
+            width: 24px;
+        }
+
+        .honeycomb div {
+            animation: honeycomb 2.1s infinite backwards;
+            background: #4a9eff;
+            height: 12px;
+            margin-top: 6px;
+            position: absolute;
+            width: 24px;
+        }
+
+        .honeycomb div:after, .honeycomb div:before {
+            content: '';
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            position: absolute;
+            left: 0;
+            right: 0;
+        }
+
+        .honeycomb div:after {
+            top: -6px;
+            border-bottom: 6px solid #4a9eff;
+        }
+
+        .honeycomb div:before {
+            bottom: -6px;
+            border-top: 6px solid #4a9eff;
+        }
+
+        .honeycomb div:nth-child(1) {
+            animation-delay: 0s;
+            left: -28px;
+            top: 0;
+        }
+
+        .honeycomb div:nth-child(2) {
+            animation-delay: 0.1s;
+            left: -14px;
+            top: 22px;
+        }
+
+        .honeycomb div:nth-child(3) {
+            animation-delay: 0.2s;
+            left: 14px;
+            top: 22px;
+        }
+
+        .honeycomb div:nth-child(4) {
+            animation-delay: 0.3s;
+            left: 28px;
+            top: 0;
+        }
+
+        .honeycomb div:nth-child(5) {
+            animation-delay: 0.4s;
+            left: 14px;
+            top: -22px;
+        }
+
+        .honeycomb div:nth-child(6) {
+            animation-delay: 0.5s;
+            left: -14px;
+            top: -22px;
+        }
+
+        .honeycomb div:nth-child(7) {
+            animation-delay: 0.6s;
+            left: 0;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+<!-- 加载动画 -->
+<div class="loading-screen">
+    <div class="honeycomb">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+</div>
+<div id="app"></div>
+<script src="/src/main.js" type="module"></script>
+</body>
 </html>

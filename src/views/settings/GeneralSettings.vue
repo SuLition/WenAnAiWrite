@@ -186,7 +186,7 @@ const checkUpdateNow = async () => {
 .setting-group {
   padding-bottom: 16px;
   margin-bottom: 16px;
-  border-bottom: 1px solid var(--border-primary, #3d3f43);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .setting-group:last-child {
@@ -210,18 +210,18 @@ const checkUpdateNow = async () => {
 .setting-icon {
   width: 20px;
   height: 20px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
 }
 
 .setting-label {
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
 }
 
 .setting-hint {
   font-size: 12px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
   margin: 8px 0 0 32px;
 }
 
@@ -250,8 +250,8 @@ const checkUpdateNow = async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--bg-primary, #1e1f22);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   transition: 0.2s;
   border-radius: 24px;
 }
@@ -263,14 +263,14 @@ const checkUpdateNow = async () => {
   width: 18px;
   left: 2px;
   bottom: 2px;
-  background-color: var(--text-tertiary, #6c6e73);
+  background-color: var(--text-tertiary);
   transition: 0.2s;
   border-radius: 50%;
 }
 
 input:checked + .slider {
-  background-color: var(--accent-color, #4a9eff);
-  border-color: var(--accent-color, #4a9eff);
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
 }
 
 input:checked + .slider:before {
@@ -286,14 +286,14 @@ input:checked + .slider:before {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid var(--border-primary, #3d3f43);
-  background: var(--bg-primary, #1e1f22);
-  color: var(--text-primary, #ffffff);
+  border: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .check-update-btn:hover {
-  background: var(--accent-color, #4a9eff);
-  border-color: var(--accent-color, #4a9eff);
+  background: var(--accent-color);
+  border-color: var(--accent-color);
   color: #fff;
 }
 
@@ -319,7 +319,7 @@ input:checked + .slider:before {
 }
 
 .color-dot.active {
-  border-color: var(--text-primary, #ffffff);
+  border-color: var(--text-primary);
   box-shadow: 0 0 0 2px var(--color);
 }
 </style>

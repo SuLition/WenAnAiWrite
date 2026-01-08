@@ -134,13 +134,13 @@ const openGitHub = async () => {
   gap: 20px;
   padding-bottom: 24px;
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--border-primary, #3d3f43);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .app-logo {
   width: 72px;
   height: 72px;
-  background: linear-gradient(135deg, var(--accent-color, #4a9eff) 0%, #6366f1 100%);
+  background: linear-gradient(135deg, var(--accent-color) 0%, #6366f1 100%);
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -163,14 +163,14 @@ const openGitHub = async () => {
 .app-name {
   font-size: 24px;
   font-weight: 600;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   margin: 0;
 }
 
 .app-version {
   font-size: 14px;
-  color: var(--text-tertiary, #6c6e73);
-  background: var(--bg-secondary, #2b2d30);
+  color: var(--text-tertiary);
+  background: var(--bg-secondary);
   padding: 4px 10px;
   border-radius: 12px;
   width: fit-content;
@@ -180,7 +180,7 @@ const openGitHub = async () => {
 .about-section {
   padding-bottom: 20px;
   margin-bottom: 20px;
-  border-bottom: 1px solid var(--border-primary, #3d3f43);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .about-section:last-of-type {
@@ -191,14 +191,14 @@ const openGitHub = async () => {
 .section-title {
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   margin: 0 0 12px 0;
 }
 
 .app-desc {
   font-size: 14px;
   line-height: 1.7;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -217,13 +217,13 @@ const openGitHub = async () => {
   align-items: center;
   gap: 10px;
   font-size: 13px;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
 }
 
 .feature-icon {
   width: 16px;
   height: 16px;
-  color: var(--accent-color, #4a9eff);
+  color: var(--accent-color);
   flex-shrink: 0;
 }
 
@@ -236,11 +236,11 @@ const openGitHub = async () => {
 
 .tech-tag {
   font-size: 12px;
-  color: var(--text-secondary, #afb1b3);
-  background: var(--bg-secondary, #2b2d30);
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
   padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid var(--border-primary, #3d3f43);
+  border: 1px solid var(--border-primary);
 }
 
 /* 链接列表 */
@@ -255,34 +255,34 @@ const openGitHub = async () => {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: var(--bg-secondary, #2b2d30);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
   font-size: 14px;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
 }
 
 .link-item:hover {
-  background: var(--bg-tertiary, #3d3f43);
-  border-color: var(--accent-color, #4a9eff);
+  background: var(--bg-tertiary);
+  border-color: var(--accent-color);
 }
 
 .link-icon {
   width: 20px;
   height: 20px;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
 }
 
 .link-item:hover .link-icon {
-  color: var(--accent-color, #4a9eff);
+  color: var(--accent-color);
 }
 
 .arrow-icon {
   width: 16px;
   height: 16px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
   margin-left: auto;
 }
 
@@ -294,7 +294,7 @@ const openGitHub = async () => {
 
 .copyright {
   font-size: 12px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
   margin: 0;
   text-align: center;
 }

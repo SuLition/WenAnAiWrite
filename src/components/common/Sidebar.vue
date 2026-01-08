@@ -114,7 +114,9 @@ const handleToggleTheme = () => {
         <svg v-if="item.icon === 'settings'" class="sidebar-icon" fill="none" viewBox="0 0 24 24"
              xmlns="http://www.w3.org/2000/svg">
           <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="2"/>
+          <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+              stroke="currentColor" stroke-width="2"/>
         </svg>
       </div>
     </div>
@@ -125,12 +127,12 @@ const handleToggleTheme = () => {
 .sidebar {
   width: 60px;
   height: 100vh;
-  background: var(--bg-secondary, #2b2d30);
+  background: var(--bg-secondary);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 16px 0;
-  border-right: 1px solid var(--border-primary, #3d3f43);
+  border-right: 1px solid var(--border-primary);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -146,7 +148,7 @@ const handleToggleTheme = () => {
 .logo-box {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, var(--accent-color, #4a9eff) 0%, #a855f7 100%);
+  background: linear-gradient(135deg, var(--accent-color) 0%, #a855f7 100%);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -189,23 +191,23 @@ const handleToggleTheme = () => {
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
   position: relative;
 }
 
 .sidebar-item:hover {
-  background: var(--bg-tertiary, #3d3f43);
-  color: var(--text-primary, #ffffff);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .sidebar-item.active {
-  background: var(--accent-color, #4a9eff);
+  background: var(--accent-color);
   color: #ffffff;
 }
 
 .sidebar-item.theme-toggle:hover {
-  background: var(--accent-light, rgba(74, 158, 255, 0.15));
-  color: var(--accent-color, #4a9eff);
+  background: var(--accent-light);
+  color: var(--accent-color);
 }
 
 .sidebar-icon {

@@ -77,13 +77,13 @@ const { visible, updateInfo, downloading, progress } = storeToRefs(updateStore)
 }
 
 .updater-dialog {
-  background: var(--bg-secondary, #2b2d30);
+  background: var(--bg-secondary);
   border-radius: 12px;
   padding: 24px;
   width: 520px;
   max-width: 90vw;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--border-primary, #3d3f43);
+  border: 1px solid var(--border-primary);
 }
 
 .updater-title {
@@ -92,12 +92,12 @@ const { visible, updateInfo, downloading, progress } = storeToRefs(updateStore)
   gap: 12px;
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary, #fff);
+  color: var(--text-primary);
   margin-bottom: 20px;
 }
 
 .updater-title svg {
-  color: var(--accent-color, #4a9eff);
+  color: var(--accent-color);
 }
 
 .updater-content {
@@ -112,7 +112,7 @@ const { visible, updateInfo, downloading, progress } = storeToRefs(updateStore)
 }
 
 .version-badge {
-  background: var(--accent-color, #4a9eff);
+  background: var(--accent-color);
   color: #fff;
   padding: 4px 12px;
   border-radius: 16px;
@@ -121,17 +121,17 @@ const { visible, updateInfo, downloading, progress } = storeToRefs(updateStore)
 }
 
 .version-date {
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
   font-size: 13px;
 }
 
 .changelog {
-  background: var(--bg-primary, #1e1f22);
+  background: var(--bg-primary);
   border-radius: 8px;
   padding: 12px 16px;
   height: 200px;
   overflow-y: auto;
-  border: 1px solid var(--border-primary, #3d3f43);
+  border: 1px solid var(--border-primary);
 }
 
 .changelog pre {
@@ -140,7 +140,7 @@ const { visible, updateInfo, downloading, progress } = storeToRefs(updateStore)
   word-break: break-word;
   font-size: 13px;
   line-height: 1.6;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
   font-family: inherit;
 }
 
@@ -154,21 +154,21 @@ const { visible, updateInfo, downloading, progress } = storeToRefs(updateStore)
 .progress-bar {
   flex: 1;
   height: 6px;
-  background: var(--bg-primary, #1e1f22);
+  background: var(--bg-primary);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: var(--accent-color, #4a9eff);
+  background: var(--accent-color);
   transition: width 0.2s ease;
   border-radius: 3px;
 }
 
 .progress-text {
   font-size: 13px;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
   min-width: 50px;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -196,7 +196,7 @@ const { visible, updateInfo, downloading, progress } = storeToRefs(updateStore)
 }
 
 .btn-primary {
-  background: var(--accent-color, #4a9eff);
+  background: var(--accent-color);
   color: #fff;
 }
 
@@ -205,13 +205,13 @@ const { visible, updateInfo, downloading, progress } = storeToRefs(updateStore)
 }
 
 .btn-secondary {
-  background: var(--bg-primary, #1e1f22);
-  color: var(--text-primary, #fff);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: var(--border-primary, #3d3f43);
+  background: var(--border-primary);
 }
 
 .btn:disabled {

@@ -306,7 +306,7 @@ onMounted(() => {
 .setting-group {
   padding-bottom: 16px;
   margin-bottom: 16px;
-  border-bottom: 1px solid var(--border-primary, #3d3f43);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .setting-group:last-child {
@@ -330,18 +330,18 @@ onMounted(() => {
 .setting-icon {
   width: 20px;
   height: 20px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
 }
 
 .setting-label {
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
 }
 
 .setting-hint {
   font-size: 12px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
   margin: 8px 0 0 32px;
 }
 
@@ -355,10 +355,10 @@ onMounted(() => {
 .path-input {
   width: 280px;
   padding: 8px 12px;
-  background: var(--bg-secondary, #2b2d30);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   font-size: 13px;
 }
 
@@ -368,17 +368,17 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-tertiary, #3d3f43);
+  background: var(--bg-tertiary);
   border: none;
   border-radius: 6px;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .btn-icon:hover {
-  background: var(--bg-hover, #4a4c50);
-  color: var(--text-primary, #ffffff);
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 /* 数字输入框 */
@@ -391,10 +391,10 @@ onMounted(() => {
 .number-input {
   width: 80px;
   padding: 8px 12px;
-  background: var(--bg-secondary, #2b2d30);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   font-size: 13px;
   text-align: center;
   -moz-appearance: textfield;
@@ -408,12 +408,12 @@ onMounted(() => {
 
 .number-input:focus {
   outline: none;
-  border-color: var(--accent-color, #4a9eff);
+  border-color: var(--accent-color);
 }
 
 .number-unit {
   font-size: 13px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
 }
 
 /* 缓存清理区域 */
@@ -440,35 +440,35 @@ onMounted(() => {
   gap: 6px;
   padding: 6px 12px;
   background: transparent;
-  border: 1px solid var(--border-primary, #3d3f43);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .btn-open-dir:hover {
-  background: var(--bg-tertiary, #3d3f43);
-  color: var(--text-primary, #ffffff);
-  border-color: var(--accent-color, #4a9eff);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--accent-color);
 }
 
 .section-icon {
   width: 20px;
   height: 20px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
 }
 
 .section-title {
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
 }
 
 .section-desc {
   font-size: 12px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
   margin: 0 0 16px 32px;
 }
 
@@ -487,7 +487,7 @@ onMounted(() => {
 
 .cache-name {
   font-size: 13px;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
 }
 
 .cache-control {
@@ -499,11 +499,11 @@ onMounted(() => {
 .cache-input {
   width: 100px;
   padding: 6px 12px;
-  background: var(--bg-secondary, #2b2d30);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-right: none;
   border-radius: 6px 0 0 6px;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   font-size: 13px;
   text-align: right;
   font-family: monospace;
@@ -515,17 +515,17 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-tertiary, #3d3f43);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
   border-radius: 0 6px 6px 0;
-  color: var(--accent-color, #4a9eff);
+  color: var(--accent-color);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .cache-clear-btn:hover {
-  background: var(--accent-color, #4a9eff);
-  border-color: var(--accent-color, #4a9eff);
+  background: var(--accent-color);
+  border-color: var(--accent-color);
   color: #ffffff;
 }
 </style>

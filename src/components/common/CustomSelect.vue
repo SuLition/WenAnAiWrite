@@ -1,27 +1,28 @@
 <template>
-  <div class="custom-select" :class="{ open: isOpen, disabled: disabled }" ref="selectRef">
+  <div ref="selectRef" :class="{ open: isOpen, disabled: disabled }" class="custom-select">
     <div class="select-trigger" @click="toggle">
-      <span class="select-value" :class="{ placeholder: !modelValue }">
+      <span :class="{ placeholder: !modelValue }" class="select-value">
         <span v-if="selectedOption?.icon" class="option-icon" v-html="selectedOption.icon"></span>
         {{ displayValue }}
       </span>
-      <svg class="select-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg class="select-arrow" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+              stroke-width="2"/>
       </svg>
     </div>
-    
+
     <Transition name="dropdown">
-      <div class="select-dropdown" v-if="isOpen">
+      <div v-if="isOpen" class="select-dropdown">
         <div class="select-options">
           <div
-            v-for="option in options"
-            :key="option.value"
-            class="select-option"
-            :class="{ 
+              v-for="option in options"
+              :key="option.value"
+              :class="{
               selected: option.value === modelValue,
-              disabled: option.disabled 
+              disabled: option.disabled
             }"
-            @click="selectOption(option)"
+              class="select-option"
+              @click="selectOption(option)"
           >
             <span v-if="option.icon" class="option-icon" v-html="option.icon"></span>
             {{ option.label }}
@@ -33,7 +34,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import {ref, computed, onMounted, onUnmounted} from 'vue';
 
 const props = defineProps({
   modelValue: {
@@ -112,8 +113,8 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  background: var(--bg-primary, #1e1f22);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -121,12 +122,12 @@ onUnmounted(() => {
 }
 
 .custom-select:hover .select-trigger {
-  border-color: var(--accent-color, #4a9eff);
+  border-color: var(--accent-color);
 }
 
 .custom-select.open .select-trigger {
-  border-color: var(--accent-color, #4a9eff);
-  box-shadow: 0 0 0 2px var(--accent-light, rgba(74, 158, 255, 0.15));
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-light);
 }
 
 .custom-select.disabled .select-trigger {
@@ -135,7 +136,7 @@ onUnmounted(() => {
 }
 
 .custom-select.disabled:hover .select-trigger {
-  border-color: var(--border-primary, #3d3f43);
+  border-color: var(--border-primary);
 }
 
 .select-value {
@@ -143,20 +144,20 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .select-value.placeholder {
-  color: var(--text-placeholder, #6c6e73);
+  color: var(--text-placeholder);
 }
 
 .select-arrow {
   width: 16px;
   height: 16px;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
   flex-shrink: 0;
   margin-left: 8px;
   transition: transform 0.2s ease;
@@ -171,8 +172,8 @@ onUnmounted(() => {
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  background: var(--bg-secondary, #2b2d30);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   z-index: 9999;
@@ -194,12 +195,12 @@ onUnmounted(() => {
 }
 
 .select-options::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary, #3d3f43);
+  background: var(--bg-tertiary);
   border-radius: 3px;
 }
 
 .select-options::-webkit-scrollbar-thumb:hover {
-  background: var(--border-secondary, #4a4c50);
+  background: var(--border-secondary);
 }
 
 .select-option {
@@ -207,7 +208,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  color: var(--text-secondary, #d4d4d4);
+  color: var(--text-secondary);
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.15s ease;
@@ -231,27 +232,27 @@ onUnmounted(() => {
 }
 
 .select-option:hover {
-  background: var(--bg-tertiary, #3d3f43);
-  color: var(--text-primary, #ffffff);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .select-option.selected {
-  background: var(--accent-color, #4a9eff);
+  background: var(--accent-color);
   color: #ffffff;
 }
 
 .select-option.selected:hover {
-  background: var(--accent-hover, #3d8fe8);
+  background: var(--accent-hover);
 }
 
 .select-option.disabled {
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
   cursor: not-allowed;
 }
 
 .select-option.disabled:hover {
   background: transparent;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
 }
 
 /* 下拉动画 */

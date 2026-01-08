@@ -26,11 +26,11 @@
 .empty-icon {
   width: 80px;
   height: 80px;
-  color: var(--text-tertiary, #3d3f43);
+  color: var(--text-tertiary);
 }
 
 .empty-text {
   font-size: 16px;
-  color: var(--text-secondary, #6c6e73);
+  color: var(--text-secondary);
 }
 </style>

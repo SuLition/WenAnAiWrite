@@ -21,6 +21,6 @@ import HamsterLoading from '@/components/common/HamsterLoading.vue';
 
 .parsing-hint {
   font-size: 14px;
-  color: var(--text-secondary, #6c6e73);
+  color: var(--text-secondary);
 }
 </style>

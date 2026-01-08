@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from 'vue';
+import {ref, computed, watch, onUnmounted, nextTick} from 'vue';
 import {toast} from 'vue-sonner';
 import CustomSelect from '@/components/common/CustomSelect.vue';
 import {AI_MODELS, REWRITE_STYLES, DEFAULT_PROMPTS} from '@/constants/options.js';
@@ -27,8 +27,203 @@ const customPrompt = ref(DEFAULT_PROMPTS['professional'] || '');
 const isRewriting = ref(false);
 const isExtracting = ref(false);
 
+// 音频播放器状态
+const audioRef = ref(null);
+const isPlaying = ref(false);
+const isAudioLoading = ref(false);
+const currentTime = ref(0);
+const duration = ref(0);
+const audioError = ref(false);
+
+// 拖拽状态
+const isDragging = ref(false);
+const dragTime = ref(0);
+const wasPlayingBeforeDrag = ref(false);
+const progressRef = ref(null);
+
 // Store
 const historyStore = useHistoryStore();
+
+// 获取音频URL
+const audioUrl = computed(() => {
+  if (!props.videoInfo?.audioStream?.url) return null;
+  const platform = props.videoInfo.platform;
+  const url = props.videoInfo.audioStream.url;
+  // 通过后端代理解决跨域问题
+  return `http://127.0.0.1:3721/proxy-audio?url=${encodeURIComponent(url)}&platform=${platform}`;
+});
+
+// 格式化时间
+const formatTime = (seconds) => {
+  if (!seconds || isNaN(seconds)) return '00:00';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
+// 播放进度百分比（拖拽时使用dragTime）
+const progressPercent = computed(() => {
+  if (!duration.value) return 0;
+  const time = isDragging.value ? dragTime.value : currentTime.value;
+  return (time / duration.value) * 100;
+});
+
+// 播放/暂停
+const togglePlay = async () => {
+  if (!audioRef.value) return;
+  
+  if (isPlaying.value) {
+    audioRef.value.pause();
+  } else {
+    try {
+      await audioRef.value.play();
+    } catch (e) {
+      toast.error('音频播放失败');
+    }
+  }
+};
+
+// 时间更新（拖拽时不更新）
+const onTimeUpdate = () => {
+  if (audioRef.value && !isDragging.value) {
+    currentTime.value = audioRef.value.currentTime;
+  }
+};
+
+// 加载元数据
+const onLoadedMetadata = () => {
+  if (audioRef.value) {
+    duration.value = audioRef.value.duration;
+    isAudioLoading.value = false;
+    audioError.value = false;
+  }
+};
+
+// 播放状态变化
+const onPlay = () => isPlaying.value = true;
+const onPause = () => isPlaying.value = false;
+const onEnded = () => {
+  isPlaying.value = false;
+  currentTime.value = 0;
+};
+
+// 音频加载错误
+const onAudioError = () => {
+  audioError.value = true;
+  isAudioLoading.value = false;
+  isPlaying.value = false;
+};
+
+// 开始加载
+const onLoadStart = () => {
+  isAudioLoading.value = true;
+};
+
+// 计算拖拽位置对应的时间
+const calcTimeFromPosition = (e, rect) => {
+  const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  return percent * duration.value;
+};
+
+// 进度条点击/拖拽开始
+const onProgressMouseDown = (e) => {
+  if (!audioRef.value || !duration.value) return;
+  
+  e.preventDefault();
+  isDragging.value = true;
+  wasPlayingBeforeDrag.value = isPlaying.value;
+  
+  // 暂停播放
+  if (isPlaying.value) {
+    audioRef.value.pause();
+  }
+  
+  // 设置拖拽时间
+  const rect = progressRef.value.getBoundingClientRect();
+  dragTime.value = calcTimeFromPosition(e, rect);
+  
+  // 添加全局事件监听
+  document.addEventListener('mousemove', onProgressMouseMove);
+  document.addEventListener('mouseup', onProgressMouseUp);
+};
+
+// 拖拽移动
+const onProgressMouseMove = (e) => {
+  if (!isDragging.value || !progressRef.value) return;
+  
+  const rect = progressRef.value.getBoundingClientRect();
+  dragTime.value = calcTimeFromPosition(e, rect);
+};
+
+// 拖拽结束
+const onProgressMouseUp = async () => {
+  if (!isDragging.value) return;
+  
+  // 移除全局事件监听
+  document.removeEventListener('mousemove', onProgressMouseMove);
+  document.removeEventListener('mouseup', onProgressMouseUp);
+  
+  // 设置播放位置
+  if (audioRef.value) {
+    audioRef.value.currentTime = dragTime.value;
+    currentTime.value = dragTime.value;
+    
+    // 如果之前在播放，继续播放
+    if (wasPlayingBeforeDrag.value) {
+      try {
+        await audioRef.value.play();
+      } catch (e) {
+        console.error('继续播放失败:', e);
+      }
+    }
+  }
+  
+  isDragging.value = false;
+};
+
+// 进度条点击跳转（单击时直接跳转）
+const onProgressClick = (e) => {
+  // 如果是拖拽结束后的点击，忽略
+  if (isDragging.value) return;
+  if (!audioRef.value || !duration.value) return;
+  
+  const rect = e.currentTarget.getBoundingClientRect();
+  const time = calcTimeFromPosition(e, rect);
+  audioRef.value.currentTime = time;
+  currentTime.value = time;
+};
+
+// 监听videoInfo变化，重置播放器并自动加载音频
+watch(() => props.videoInfo, async (newInfo) => {
+  // 重置播放器状态
+  if (audioRef.value) {
+    audioRef.value.pause();
+    audioRef.value.currentTime = 0;
+  }
+  isPlaying.value = false;
+  currentTime.value = 0;
+  duration.value = 0;
+  audioError.value = false;
+  isDragging.value = false;
+  
+  // 解析完成后自动加载音频
+  if (newInfo?.audioStream?.url) {
+    // 等待 DOM 更新
+    await nextTick();
+    if (audioRef.value) {
+      audioRef.value.load();
+    }
+  }
+});
+
+// 组件卸载时停止播放并清理事件
+onUnmounted(() => {
+  if (audioRef.value) {
+    audioRef.value.pause();
+  }
+  document.removeEventListener('mousemove', onProgressMouseMove);
+  document.removeEventListener('mouseup', onProgressMouseUp);
+});
 
 const onStyleChange = (newStyle) => {
   customPrompt.value = DEFAULT_PROMPTS[newStyle] || '';
@@ -200,12 +395,69 @@ const handleCopy = () => {
   <div class="copywriting-module">
     <div class="copy-left">
       <div class="copy-display-area">
-        <div class="copy-mode-indicator">
-          <span v-if="copyMode === 'original'" class="mode-tag original">原始文案</span>
-          <span v-else class="mode-tag rewritten">改写后</span>
-        </div>
+        <div class="copy-header">
+          <div class="copy-mode-indicator">
+            <span v-if="copyMode === 'original'" class="mode-tag original">原始文案</span>
+            <span v-else class="mode-tag rewritten">改写后</span>
+          </div>
 
-        <div class="floating-actions">
+          <!-- 音频播放器 -->
+          <div v-if="audioUrl" class="audio-player">
+            <audio
+                ref="audioRef"
+                :src="audioUrl"
+                preload="auto"
+                @timeupdate="onTimeUpdate"
+                @loadedmetadata="onLoadedMetadata"
+                @play="onPlay"
+                @pause="onPause"
+                @ended="onEnded"
+                @error="onAudioError"
+                @loadstart="onLoadStart"
+            />
+            
+            <!-- 播放按钮 -->
+            <button 
+                class="play-btn" 
+                :disabled="audioError || isAudioLoading"
+                @click="togglePlay"
+            >
+              <!-- 加载中 -->
+              <svg v-if="isAudioLoading" class="spin" fill="none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" opacity="0.3" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 2a10 10 0 0110 10" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+              </svg>
+              <!-- 播放 -->
+              <svg v-else-if="!isPlaying" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <!-- 暂停 -->
+              <svg v-else fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+              </svg>
+            </button>
+
+            <!-- 进度条 -->
+            <div 
+                ref="progressRef"
+                class="progress-wrapper" 
+                :class="{ dragging: isDragging }"
+                @mousedown="onProgressMouseDown"
+                @click="onProgressClick"
+            >
+              <div class="progress-track">
+                <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+                <div class="progress-thumb" :style="{ left: progressPercent + '%' }"></div>
+              </div>
+            </div>
+
+            <!-- 时间显示 -->
+            <span class="time-display">
+              {{ formatTime(isDragging ? dragTime : currentTime) }} / {{ formatTime(duration) }}
+            </span>
+          </div>
+
+          <div class="floating-actions">
           <button
               :disabled="isExtracting || !videoInfo"
               class="floating-btn extract"
@@ -235,6 +487,7 @@ const handleCopy = () => {
               <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="2"/>
             </svg>
           </button>
+          </div>
         </div>
 
         <textarea
@@ -295,9 +548,9 @@ const handleCopy = () => {
   gap: 16px;
   flex: 3;
   min-height: 0;
-  background: var(--bg-secondary, #2b2d30);
+  background: var(--bg-secondary);
   border-radius: 8px;
-  border: 1px solid var(--border-primary, #3d3f43);
+  border: 1px solid var(--border-primary);
   padding: 16px;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
@@ -310,25 +563,147 @@ const handleCopy = () => {
 
 .copy-display-area {
   flex: 1;
-  position: relative;
+  display: flex;
+  flex-direction: column;
   border-radius: 6px;
   overflow: hidden;
 }
 
+.copy-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+}
+
 .copy-mode-indicator {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  z-index: 2;
+  flex-shrink: 0;
 }
 
 .floating-actions {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
   display: flex;
   gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* 音频播放器样式 */
+.audio-player {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  min-width: 0;
+}
+
+.audio-player audio {
+  display: none;
+}
+
+.play-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-color);
+  border: none;
+  border-radius: 50%;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.play-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.play-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: scale(1.05);
+}
+
+.play-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.play-btn .spin {
+  animation: spin 1s linear infinite;
+}
+
+.progress-wrapper {
+  flex: 1;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0 4px;
+  min-width: 80px;
+  user-select: none;
+}
+
+.progress-wrapper.dragging {
+  cursor: grabbing;
+}
+
+.progress-track {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background: var(--border-primary);
+  border-radius: 2px;
+  overflow: visible;
+  transition: height 0.15s ease;
+}
+
+.progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--accent-color);
+  border-radius: 2px;
+}
+
+.progress-thumb {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background: var(--accent-color);
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.progress-wrapper:hover .progress-thumb,
+.progress-wrapper.dragging .progress-thumb {
+  transform: translate(-50%, -50%) scale(1.2);
+  box-shadow: 0 2px 8px rgba(74, 158, 255, 0.4);
+}
+
+.progress-wrapper:hover .progress-track,
+.progress-wrapper.dragging .progress-track {
+  height: 6px;
+}
+
+.time-display {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-family: 'SF Mono', Monaco, monospace;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .floating-btn {
@@ -338,10 +713,10 @@ const handleCopy = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent-light, rgba(74, 158, 255, 0.15));
-  border: 1px solid var(--accent-border, rgba(74, 158, 255, 0.3));
+  background: var(--accent-light);
+  border: 1px solid var(--accent-border);
   border-radius: 6px;
-  color: var(--accent-color, #4a9eff);
+  color: var(--accent-color);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -352,7 +727,7 @@ const handleCopy = () => {
 }
 
 .floating-btn:hover:not(:disabled) {
-  background: var(--accent-color, #4a9eff);
+  background: var(--accent-color);
   color: #ffffff;
 }
 
@@ -378,9 +753,9 @@ const handleCopy = () => {
 }
 
 .mode-tag.original {
-  background: var(--accent-light, rgba(74, 158, 255, 0.2));
-  color: var(--accent-color, #4a9eff);
-  border: 1px solid var(--accent-border, rgba(74, 158, 255, 0.3));
+  background: var(--accent-light);
+  color: var(--accent-color);
+  border: 1px solid var(--accent-border);
 }
 
 .mode-tag.rewritten {
@@ -390,14 +765,14 @@ const handleCopy = () => {
 }
 
 .copy-textarea {
+  flex: 1;
   width: 100%;
-  height: 100%;
   padding: 12px;
-  padding-top: 48px;
-  background: var(--bg-primary, #1e1f22);
-  border: 1px solid var(--border-primary, #3d3f43);
-  border-radius: 6px;
-  color: var(--text-primary, #ffffff);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  color: var(--text-primary);
   font-size: 14px;
   line-height: 1.6;
   resize: none;
@@ -406,7 +781,7 @@ const handleCopy = () => {
 }
 
 .copy-textarea::placeholder {
-  color: var(--text-placeholder, #6c6e73);
+  color: var(--text-placeholder);
 }
 
 .copy-right {
@@ -434,7 +809,7 @@ const handleCopy = () => {
 .control-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
 }
 
 .prompt-group {
@@ -453,10 +828,10 @@ const handleCopy = () => {
   width: 100%;
   min-height: 60px;
   padding: 10px;
-  background: var(--bg-primary, #1e1f22);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   font-size: 13px;
   line-height: 1.5;
   resize: none;
@@ -466,17 +841,17 @@ const handleCopy = () => {
 }
 
 .prompt-textarea:focus {
-  border-color: var(--accent-color, #4a9eff);
+  border-color: var(--accent-color);
 }
 
 .prompt-textarea::placeholder {
-  color: var(--text-placeholder, #6c6e73);
+  color: var(--text-placeholder);
 }
 
 .rewrite-button {
   width: 100%;
   padding: 12px 20px;
-  background: var(--accent-color, #4a9eff);
+  background: var(--accent-color);
   border: none;
   border-radius: 6px;
   color: #ffffff;
@@ -498,7 +873,7 @@ const handleCopy = () => {
 }
 
 .rewrite-button:hover:not(:disabled) {
-  background: var(--accent-hover, #3d8fe8);
+  background: var(--accent-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
 }

@@ -194,7 +194,7 @@ onMounted(() => {
 .setting-group {
   padding-bottom: 16px;
   margin-bottom: 16px;
-  border-bottom: 1px solid var(--border-primary, #3d3f43);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .setting-group:last-child {
@@ -218,18 +218,18 @@ onMounted(() => {
 .setting-icon {
   width: 20px;
   height: 20px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
 }
 
 .setting-label {
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
 }
 
 .setting-tag {
   font-size: 12px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
   margin-left: 8px;
 }
 
@@ -237,7 +237,7 @@ onMounted(() => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--bg-tertiary, #3d3f43);
+  background: var(--bg-tertiary);
 }
 
 .status-dot.active {
@@ -263,27 +263,27 @@ onMounted(() => {
 .form-field label {
   display: block;
   font-size: 12px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
   margin-bottom: 6px;
 }
 
 .form-field input {
   width: 100%;
   padding: 8px 12px;
-  background: var(--bg-primary, #1e1f22);
-  border: 1px solid var(--border-primary, #3d3f43);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   font-size: 13px;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .form-field input:focus {
-  border-color: var(--accent-color, #4a9eff);
+  border-color: var(--accent-color);
 }
 
 .form-field input::placeholder {
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
 }
 </style>

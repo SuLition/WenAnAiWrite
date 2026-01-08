@@ -1,12 +1,13 @@
 <script setup>
 import {onMounted, onUnmounted, ref} from "vue";
+
 const isClosing = ref(false)
 let unlisten = null
 
 onMounted(async () => {
   // 监听关闭事件
   try {
-    const { listen } = await import('@tauri-apps/api/event')
+    const {listen} = await import('@tauri-apps/api/event')
     unlisten = await listen('app-closing', () => {
       isClosing.value = true
     })
@@ -44,7 +45,6 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   z-index: 99999;
-  backdrop-filter: blur(4px);
 }
 
 .closing-content {

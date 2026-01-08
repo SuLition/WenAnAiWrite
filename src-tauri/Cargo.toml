@@ -1,6 +1,6 @@
 [package]
 name = "app"
-version = "0.2.3"
+version = "0.2.4"
 description = "文案助手 - AI文案写作工具"
 authors = ["you"]
 license = ""

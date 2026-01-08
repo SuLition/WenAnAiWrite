@@ -78,7 +78,7 @@ const isActive = (path) => route.path === path
 .settings-page {
   flex: 1;
   display: flex;
-  background: var(--bg-primary, #1e1f22);
+  background: var(--bg-primary);
   overflow: hidden;
 }
 
@@ -98,7 +98,7 @@ const isActive = (path) => route.path === path
 }
 
 .settings-content::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary, #3d3f43);
+  background: var(--bg-tertiary);
   border-radius: 3px;
 }
 
@@ -113,13 +113,13 @@ const isActive = (path) => route.path === path
 .header-icon {
   width: 28px;
   height: 28px;
-  color: var(--accent-color, #4a9eff);
+  color: var(--accent-color);
 }
 
 .page-title {
   font-size: 24px;
   font-weight: 600;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -146,29 +146,29 @@ const isActive = (path) => route.path === path
 }
 
 .nav-item:hover {
-  background: var(--bg-secondary, #2b2d30);
+  background: var(--bg-secondary);
 }
 
 .nav-item.active {
-  background: var(--bg-secondary, #2b2d30);
+  background: var(--bg-secondary);
 }
 
 .nav-label {
   font-size: 13px;
-  color: var(--text-secondary, #afb1b3);
+  color: var(--text-secondary);
 }
 
 .nav-item.active .nav-label {
-  color: var(--accent-color, #4a9eff);
+  color: var(--accent-color);
 }
 
 .nav-icon {
   width: 16px;
   height: 16px;
-  color: var(--text-tertiary, #6c6e73);
+  color: var(--text-tertiary);
 }
 
 .nav-item.active .nav-icon {
-  color: var(--accent-color, #4a9eff);
+  color: var(--accent-color);
 }
 </style>
