@@ -14,6 +14,9 @@ const themeStore = useThemeStore()
 const configStore = useConfigStore()
 const updateStore = useUpdateStore()
 
+// 初始化完成状态（用于防止主题闪烁）
+const initialized = ref(false)
+
 // 当前主题
 const toasterTheme = computed(() => themeStore.appliedTheme === 'dark' ? 'dark' : 'light')
 
@@ -27,10 +30,14 @@ onMounted(async () => {
     await configStore.load()
     // 初始化主题
     await themeStore.init()
+    // 标记初始化完成，显示内容
+    initialized.value = true
     // 自动检查更新
     updateStore.autoCheck()
   } catch (e) {
     console.error('初始化失败:', e)
+    // 即使失败也要显示内容
+    initialized.value = true
   }
   // 确保无论如何都显示窗口
   try {
@@ -43,7 +50,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="app-container" :class="{ 'app-ready': initialized }">
     <Sidebar/>
     <div class="main-content">
       <TitleBar/>
@@ -93,6 +100,12 @@ body {
   display: flex;
   width: 100%;
   height: 100vh;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.app-container.app-ready {
+  opacity: 1;
 }
 
 .main-content {

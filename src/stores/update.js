@@ -10,12 +10,15 @@ import { invoke } from '@tauri-apps/api/core'
 import { toast } from 'vue-sonner'
 import { useConfigStore } from './config'
 
+// 将原始 update 对象存储在响应式系统之外，避免 Pinia 代理无法访问私有成员
+let rawUpdate = null
+
 export const useUpdateStore = defineStore('update', {
   state: () => ({
     // 弹窗可见性
     visible: false,
-    // 更新信息
-    update: null,
+    // 更新信息（仅包含显示所需的数据）
+    updateInfo: null,
     // 下载中
     downloading: false,
     // 下载进度
@@ -24,9 +27,9 @@ export const useUpdateStore = defineStore('update', {
 
   getters: {
     // 是否有可用更新
-    hasUpdate: (state) => state.update !== null,
+    hasUpdate: (state) => state.updateInfo !== null,
     // 新版本号
-    newVersion: (state) => state.update?.version || ''
+    newVersion: (state) => state.updateInfo?.version || ''
   },
 
   actions: {
@@ -41,7 +44,14 @@ export const useUpdateStore = defineStore('update', {
 
         if (update) {
           console.log('[更新] 发现新版本:', update.version)
-          this.update = update
+          // 保存原始对象到非响应式变量
+          rawUpdate = update
+          // 只存储显示所需的数据到 Pinia
+          this.updateInfo = {
+            version: update.version,
+            body: update.body,
+            date: update.date
+          }
           this.visible = true
         } else if (showNoUpdate) {
           toast.success('已是最新版本')
@@ -60,7 +70,7 @@ export const useUpdateStore = defineStore('update', {
      * 执行更新
      */
     async doUpdate() {
-      if (!this.update) return
+      if (!rawUpdate) return
 
       this.downloading = true
       let downloaded = 0
@@ -71,7 +81,7 @@ export const useUpdateStore = defineStore('update', {
         console.log('[更新] 停止后端服务...')
         await invoke('stop_backend')
         
-        await this.update.downloadAndInstall((event) => {
+        await rawUpdate.downloadAndInstall((event) => {
           if (event.event === 'Started') {
             total = event.data.contentLength || 0
             console.log('[更新] 开始下载，总大小:', total)
@@ -98,8 +108,9 @@ export const useUpdateStore = defineStore('update', {
     close() {
       if (!this.downloading) {
         this.visible = false
-        this.update = null
+        this.updateInfo = null
         this.progress = 0
+        rawUpdate = null
       }
     },
 

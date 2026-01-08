@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia'
 
 // Store
 const updateStore = useUpdateStore()
-const { visible, update, downloading, progress } = storeToRefs(updateStore)
+const { visible, updateInfo, downloading, progress } = storeToRefs(updateStore)
 </script>
 
 <template>
@@ -23,14 +23,14 @@ const { visible, update, downloading, progress } = storeToRefs(updateStore)
           
           <div class="updater-content">
             <div class="version-info">
-              <span class="version-badge">v{{ update?.version }}</span>
-              <span v-if="update?.date" class="version-date">
-                {{ new Date(update.date).toLocaleDateString() }}
+              <span class="version-badge">v{{ updateInfo?.version }}</span>
+              <span v-if="updateInfo?.date" class="version-date">
+                {{ new Date(updateInfo.date).toLocaleDateString() }}
               </span>
             </div>
             
-            <div class="changelog" v-if="update?.body">
-              <pre>{{ update.body }}</pre>
+            <div class="changelog" v-if="updateInfo?.body">
+              <pre>{{ updateInfo.body }}</pre>
             </div>
             
             <div v-if="downloading" class="progress-section">
