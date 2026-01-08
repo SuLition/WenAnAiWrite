@@ -6,6 +6,7 @@
 import { defineStore } from 'pinia'
 import { check } from '@tauri-apps/plugin-updater'
 import { relaunch } from '@tauri-apps/plugin-process'
+import { invoke } from '@tauri-apps/api/core'
 import { toast } from 'vue-sonner'
 import { useConfigStore } from './config'
 
@@ -46,7 +47,9 @@ export const useUpdateStore = defineStore('update', {
           toast.success('已是最新版本')
         }
       } catch (e) {
+        // 打印完整错误信息以便调试
         console.error('[更新] 检查失败:', e)
+        console.error('[更新] 错误详情:', e.message || e.toString())
         if (showNoUpdate) {
           toast.error('检查更新失败，请稍后重试')
         }
@@ -64,6 +67,10 @@ export const useUpdateStore = defineStore('update', {
       let total = 0
 
       try {
+        // 更新前停止后端服务，避免重装时进程未终止
+        console.log('[更新] 停止后端服务...')
+        await invoke('stop_backend')
+        
         await this.update.downloadAndInstall((event) => {
           if (event.event === 'Started') {
             total = event.data.contentLength || 0

@@ -567,6 +567,13 @@ fn stop_backend_service() {
     }
 }
 
+/// 停止后端服务（前端调用，用于更新前清理）
+#[tauri::command]
+fn stop_backend() -> Result<String, String> {
+    stop_backend_service();
+    Ok("服务已停止".to_string())
+}
+
 /// 手动启动后端服务（前端调用）
 #[tauri::command]
 async fn start_backend(app: tauri::AppHandle) -> Result<String, String> {
@@ -749,6 +756,7 @@ pub fn run() {
             fetch_data, 
             resolve_redirect,
             start_backend,
+            stop_backend,
             set_window_effect
         ])
         .run(tauri::generate_context!())

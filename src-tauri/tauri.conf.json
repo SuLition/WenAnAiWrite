@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "文案助手",
-  "version": "0.2.1",
+  "productName": "WenAnAssistant",
+  "version": "0.2.2",
   "identifier": "com.wenanassistant.app",
   "build": {
     "frontendDist": "../dist",
@@ -33,7 +33,7 @@
     "targets": [
       "nsis"
     ],
-    "createUpdaterArtifacts": true,
+    "createUpdaterArtifacts": "v1Compatible",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
