@@ -52,6 +52,10 @@
     {
       "identifier": "fs:allow-mkdir",
       "allow": [{ "path": "$APPDATA/**" }, { "path": "$APPDATA" }]
+    },
+    {
+      "identifier": "fs:allow-stat",
+      "allow": [{ "path": "$APPDATA/**" }, { "path": "$APPDATA" }]
     }
   ]
 }

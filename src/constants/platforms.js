@@ -12,7 +12,7 @@ export const PLATFORM_NAMES = {
 // 平台颜色配置
 export const PLATFORM_COLORS = {
   bilibili: '#00a1d6',
-  douyin: '#fe2c55',
+  douyin: '#000000',
   xiaohongshu: '#ff2442'
 }
 

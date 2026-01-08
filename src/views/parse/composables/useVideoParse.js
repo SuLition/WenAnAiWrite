@@ -194,8 +194,13 @@ export function useVideoParse() {
         // 恢复画质选项
         if (historyItem.qualityOptions && historyItem.qualityOptions.length > 0) {
             qualityOptions.value = historyItem.qualityOptions;
-            selectedQuality.value = historyItem.selectedQuality || qualityOptions.value[0]?.value || '';
-            console.log('[restoreFromHistory] 画质选项已恢复:', qualityOptions.value);
+            // 确保 selectedQuality 与 qualityOptions 中的值类型一致
+            const storedQuality = historyItem.selectedQuality;
+            const matchingOption = qualityOptions.value.find(opt => 
+                opt.value === storedQuality || String(opt.value) === String(storedQuality)
+            );
+            selectedQuality.value = matchingOption?.value ?? qualityOptions.value[0]?.value ?? '';
+            console.log('[restoreFromHistory] 画质选项已恢复:', qualityOptions.value, '选中:', selectedQuality.value);
         } else {
             qualityOptions.value = [];
             selectedQuality.value = '';

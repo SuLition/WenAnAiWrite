@@ -1,18 +1,18 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
-import { useConfigStore, useThemeStore } from '@/stores'
+import { useConfigStore } from '@/stores'
 import { selectDownloadDir, getSystemDownloadDir } from '@/services/download/tauriDownload.js'
 import { clearHistory } from '@/services/storage'
+import { clearParseHistory as clearParseHistoryStorage } from '@/services/storage/parseHistoryStorage'
 import { clearBilibiliAuth } from '@/services/auth/bilibiliAuth'
 import { removeFile, FILE_NAMES } from '@/services/storage/fileStorage'
-import { stat, BaseDirectory } from '@tauri-apps/plugin-fs'
+import { stat } from '@tauri-apps/plugin-fs'
 import { appDataDir } from '@tauri-apps/api/path'
 import { invoke } from '@tauri-apps/api/core'
 
 // Stores
 const configStore = useConfigStore()
-const themeStore = useThemeStore()
 
 // 系统默认下载路径
 const defaultDownloadPath = ref('')
@@ -28,7 +28,7 @@ const cacheSize = reactive({
   downloadHistory: '0 B',
   bilibiliAuth: '0 B',
   appConfig: '0 B',
-  theme: '0 B'
+  parseHistory: '0 B'
 })
 
 // 格式化字节大小
@@ -43,26 +43,31 @@ const formatBytes = (bytes) => {
 // 获取文件大小
 const getFileSize = async (filename) => {
   try {
-    const fileStat = await stat(filename, { baseDir: BaseDirectory.AppData })
+    const dir = await appDataDir()
+    // 确保路径分隔符正确
+    const separator = dir.endsWith('\\') || dir.endsWith('/') ? '' : '\\'
+    const fullPath = `${dir}${separator}${filename}`
+    const fileStat = await stat(fullPath)
     return fileStat.size
-  } catch {
+  } catch (e) {
+    console.error(`获取文件大小失败 ${filename}:`, e)
     return 0
   }
 }
 
 // 加载缓存大小
 const loadCacheSize = async () => {
-  const [downloadSize, bilibiliSize, configSize, themeSize] = await Promise.all([
+  const [downloadSize, bilibiliSize, configSize, parseSize] = await Promise.all([
     getFileSize(FILE_NAMES.DOWNLOAD_HISTORY),
     getFileSize(FILE_NAMES.BILIBILI_AUTH),
     getFileSize(FILE_NAMES.CONFIG),
-    getFileSize(FILE_NAMES.THEME)
+    getFileSize(FILE_NAMES.PARSE_HISTORY)
   ])
   
   cacheSize.downloadHistory = formatBytes(downloadSize)
   cacheSize.bilibiliAuth = formatBytes(bilibiliSize)
   cacheSize.appConfig = formatBytes(configSize)
-  cacheSize.theme = formatBytes(themeSize)
+  cacheSize.parseHistory = formatBytes(parseSize)
 }
 
 // 清除下载历史
@@ -86,12 +91,11 @@ const resetAppConfig = async () => {
   toast.success('应用配置已重置')
 }
 
-// 清除主题缓存
-const clearThemeCache = async () => {
-  await removeFile(FILE_NAMES.THEME)
-  await themeStore.init() // 重新初始化主题
+// 清除解析历史
+const clearParseHistory = async () => {
+  await clearParseHistoryStorage()
   await loadCacheSize()
-  toast.success('主题缓存已清除')
+  toast.success('解析历史已清除')
 }
 
 // 打开缓存目录
@@ -257,12 +261,12 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- 主题缓存 -->
+        <!-- 解析历史 -->
         <div class="cache-item">
-          <span class="cache-name">主题设置</span>
+          <span class="cache-name">解析历史</span>
           <div class="cache-control">
-            <input class="cache-input" :value="cacheSize.theme" readonly />
-            <button class="cache-clear-btn" title="清除" @click="clearThemeCache">
+            <input class="cache-input" :value="cacheSize.parseHistory" readonly />
+            <button class="cache-clear-btn" title="清除" @click="clearParseHistory">
               <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16">
                 <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>

@@ -54,7 +54,7 @@ watch(() => props.currentHistoryId, async (newId) => {
     await historyStore.load();
     const historyItem = historyStore.findById(newId);
     console.log('[CopywritingPanel] 查找到的历史记录:', historyItem);
-    
+
     if (historyItem) {
       // 优先显示改写后的文案，其次是原始文案
       if (historyItem.rewrittenText) {
@@ -72,7 +72,7 @@ watch(() => props.currentHistoryId, async (newId) => {
       }
     }
   }
-}, { immediate: true });
+}, {immediate: true});
 
 // 获取音频URL
 const audioUrl = computed(() => {
@@ -101,7 +101,7 @@ const progressPercent = computed(() => {
 // 播放/暂停
 const togglePlay = async () => {
   if (!audioRef.value) return;
-  
+
   if (isPlaying.value) {
     audioRef.value.pause();
   } else {
@@ -138,10 +138,23 @@ const onEnded = () => {
 };
 
 // 音频加载错误
-const onAudioError = () => {
+const onAudioError = async () => {
+  console.error('音频代理加载失败，尝试直接加载原始音频');
   audioError.value = true;
   isAudioLoading.value = false;
   isPlaying.value = false;
+
+  // 尝试直接加载原始音频URL
+  if (props.videoInfo?.audioStream?.url && audioRef.value) {
+    try {
+      audioRef.value.src = props.videoInfo.audioStream.url;
+      await audioRef.value.load();
+      audioError.value = false;
+      console.log('使用原始音频URL成功');
+    } catch (e) {
+      console.error('直接加载原始音频也失败:', e);
+    }
+  }
 };
 
 // 开始加载
@@ -158,20 +171,20 @@ const calcTimeFromPosition = (e, rect) => {
 // 进度条点击/拖拽开始
 const onProgressMouseDown = (e) => {
   if (!audioRef.value || !duration.value) return;
-  
+
   e.preventDefault();
   isDragging.value = true;
   wasPlayingBeforeDrag.value = isPlaying.value;
-  
+
   // 暂停播放
   if (isPlaying.value) {
     audioRef.value.pause();
   }
-  
+
   // 设置拖拽时间
   const rect = progressRef.value.getBoundingClientRect();
   dragTime.value = calcTimeFromPosition(e, rect);
-  
+
   // 添加全局事件监听
   document.addEventListener('mousemove', onProgressMouseMove);
   document.addEventListener('mouseup', onProgressMouseUp);
@@ -180,7 +193,7 @@ const onProgressMouseDown = (e) => {
 // 拖拽移动
 const onProgressMouseMove = (e) => {
   if (!isDragging.value || !progressRef.value) return;
-  
+
   const rect = progressRef.value.getBoundingClientRect();
   dragTime.value = calcTimeFromPosition(e, rect);
 };
@@ -188,16 +201,16 @@ const onProgressMouseMove = (e) => {
 // 拖拽结束
 const onProgressMouseUp = async () => {
   if (!isDragging.value) return;
-  
+
   // 移除全局事件监听
   document.removeEventListener('mousemove', onProgressMouseMove);
   document.removeEventListener('mouseup', onProgressMouseUp);
-  
+
   // 设置播放位置
   if (audioRef.value) {
     audioRef.value.currentTime = dragTime.value;
     currentTime.value = dragTime.value;
-    
+
     // 如果之前在播放，继续播放
     if (wasPlayingBeforeDrag.value) {
       try {
@@ -207,7 +220,7 @@ const onProgressMouseUp = async () => {
       }
     }
   }
-  
+
   isDragging.value = false;
 };
 
@@ -216,7 +229,7 @@ const onProgressClick = (e) => {
   // 如果是拖拽结束后的点击，忽略
   if (isDragging.value) return;
   if (!audioRef.value || !duration.value) return;
-  
+
   const rect = e.currentTarget.getBoundingClientRect();
   const time = calcTimeFromPosition(e, rect);
   audioRef.value.currentTime = time;
@@ -235,7 +248,7 @@ watch(() => props.videoInfo, async (newInfo) => {
   duration.value = 0;
   audioError.value = false;
   isDragging.value = false;
-  
+
   // 解析完成后自动加载音频
   if (newInfo?.audioStream?.url) {
     // 等待 DOM 更新
@@ -341,19 +354,19 @@ const handleCopy = () => {
                 ref="audioRef"
                 :src="audioUrl"
                 preload="auto"
-                @timeupdate="onTimeUpdate"
-                @loadedmetadata="onLoadedMetadata"
-                @play="onPlay"
-                @pause="onPause"
                 @ended="onEnded"
                 @error="onAudioError"
+                @loadedmetadata="onLoadedMetadata"
                 @loadstart="onLoadStart"
+                @pause="onPause"
+                @play="onPlay"
+                @timeupdate="onTimeUpdate"
             />
-            
+
             <!-- 播放按钮 -->
-            <button 
-                class="play-btn" 
+            <button
                 :disabled="audioError || isAudioLoading"
+                class="play-btn"
                 @click="togglePlay"
             >
               <!-- 加载中 -->
@@ -372,16 +385,16 @@ const handleCopy = () => {
             </button>
 
             <!-- 进度条 -->
-            <div 
+            <div
                 ref="progressRef"
-                class="progress-wrapper" 
                 :class="{ dragging: isDragging }"
-                @mousedown="onProgressMouseDown"
+                class="progress-wrapper"
                 @click="onProgressClick"
+                @mousedown="onProgressMouseDown"
             >
               <div class="progress-track">
-                <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
-                <div class="progress-thumb" :style="{ left: progressPercent + '%' }"></div>
+                <div :style="{ width: progressPercent + '%' }" class="progress-fill"></div>
+                <div :style="{ left: progressPercent + '%' }" class="progress-thumb"></div>
               </div>
             </div>
 
@@ -392,35 +405,35 @@ const handleCopy = () => {
           </div>
 
           <div class="floating-actions">
-          <button
-              :disabled="isExtracting || !videoInfo"
-              class="floating-btn extract"
-              title="文案提取"
-              @click="handleExtractCopy"
-          >
-            <svg v-if="!isExtracting" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-              <path d="M8 9V15" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
-              <path d="M12 7V17" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
-              <path d="M16 9V15" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
-            </svg>
-            <svg v-else class="spin" fill="none" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" opacity="0.3" r="10" stroke="currentColor" stroke-width="2"/>
-              <path d="M12 2a10 10 0 0110 10" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
-            </svg>
-          </button>
+            <button
+                :disabled="isExtracting || !videoInfo"
+                class="floating-btn extract"
+                title="文案提取"
+                @click="handleExtractCopy"
+            >
+              <svg v-if="!isExtracting" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 9V15" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+                <path d="M12 7V17" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+                <path d="M16 9V15" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+              </svg>
+              <svg v-else class="spin" fill="none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" opacity="0.3" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 2a10 10 0 0110 10" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+              </svg>
+            </button>
 
-          <button
-              :disabled="!copyText"
-              class="floating-btn copy"
-              title="复制文案"
-              @click="handleCopy"
-          >
-            <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <rect height="13" rx="2" stroke="currentColor" stroke-width="2" width="13" x="9" y="9"/>
-              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="2"/>
-            </svg>
-          </button>
+            <button
+                :disabled="!copyText"
+                class="floating-btn copy"
+                title="复制文案"
+                @click="handleCopy"
+            >
+              <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <rect height="13" rx="2" stroke="currentColor" stroke-width="2" width="13" x="9" y="9"/>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </button>
           </div>
         </div>
 
