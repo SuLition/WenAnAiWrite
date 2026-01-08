@@ -74,6 +74,25 @@ watch(() => props.currentHistoryId, async (newId) => {
   }
 }, {immediate: true});
 
+// 监听历史记录的更新，如果当前显示的历史记录被更新，则刷新文案
+watch(() => historyStore.list, (newList) => {
+  if (props.currentHistoryId) {
+    const updatedItem = newList.find(item => item.id === props.currentHistoryId);
+    if (updatedItem) {
+      // 优先显示改写后的文案，其次是原始文案
+      if (updatedItem.rewrittenText) {
+        copyText.value = updatedItem.rewrittenText;
+        copyMode.value = 'rewritten';
+        console.log('[CopywritingPanel] 从历史记录更新中加载改写文案');
+      } else if (updatedItem.originalText) {
+        copyText.value = updatedItem.originalText;
+        copyMode.value = 'original';
+        console.log('[CopywritingPanel] 从历史记录更新中加载原始文案');
+      }
+    }
+  }
+}, {deep: true});
+
 // 获取音频URL
 const audioUrl = computed(() => {
   if (!props.videoInfo?.audioStream?.url) return null;
