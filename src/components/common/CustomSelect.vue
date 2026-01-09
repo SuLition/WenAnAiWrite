@@ -115,7 +115,7 @@ onUnmounted(() => {
   padding: 10px 12px;
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: 12px;
   cursor: pointer;
   transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
   min-height: 40px;
@@ -174,7 +174,7 @@ onUnmounted(() => {
   right: 0;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   z-index: 9999;
   overflow: hidden;
@@ -210,7 +210,7 @@ onUnmounted(() => {
   padding: 10px 12px;
   color: var(--text-secondary);
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 12px;
   transition: all var(--transition-fastest, 150ms) var(--easing-ease, ease);
   overflow: hidden;
   text-overflow: ellipsis;

@@ -41,13 +41,6 @@ const handleClear = () => {
 
 <template>
   <div class="top-input-bar">
-    <CustomSelect
-        :modelValue="platform"
-        :options="PLATFORMS"
-        class="platform-select"
-        @update:modelValue="handlePlatformChange"
-    />
-
     <div class="url-input-wrapper">
       <input
           :value="videoUrl"
@@ -64,18 +57,20 @@ const handleClear = () => {
       </button>
     </div>
 
+    <CustomSelect
+        :modelValue="platform"
+        :options="PLATFORMS"
+        class="platform-select"
+        @update:modelValue="handlePlatformChange"
+    />
+
     <button :disabled="isParsing" class="parse-button" @click="handleParse">
-      <svg v-if="!isParsing" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor"
+      <svg :class="{ 'link-drawing': isParsing }" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path class="link-path" d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor"
               stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-        <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor"
+        <path class="link-path" d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor"
               stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
       </svg>
-      <svg v-else class="spin" fill="none" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" opacity="0.3" r="10" stroke="currentColor" stroke-width="2"/>
-        <path d="M12 2a10 10 0 0110 10" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
-      </svg>
-      <span>{{ isParsing ? '解析中...' : '解析' }}</span>
     </button>
   </div>
 </template>
@@ -87,9 +82,8 @@ const handleClear = () => {
   align-items: center;
   padding: 16px;
   background: var(--bg-secondary);
-  border-radius: 8px;
+  border-radius: 16px;
   border: 1px solid var(--border-primary);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .platform-select {
@@ -108,7 +102,7 @@ const handleClear = () => {
   padding: 10px 36px 10px 16px;
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: 12px;
   color: var(--text-primary);
   font-size: 14px;
   outline: none;
@@ -154,13 +148,12 @@ const handleClear = () => {
 .parse-button {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  min-width: 100px;
-  padding: 10px 24px;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
   background: var(--accent-color);
   border: none;
-  border-radius: 6px;
+  border-radius: 12px;
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
@@ -174,8 +167,18 @@ const handleClear = () => {
   flex-shrink: 0;
 }
 
-.parse-button svg.spin {
-  animation: spin var(--animation-spin, 1000ms) linear infinite;
+.parse-button .link-path {
+  stroke-dasharray: 50;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--transition-normal) var(--easing-ease);
+}
+
+.parse-button .link-drawing .link-path {
+  animation: link-draw 1.5s ease-in-out infinite;
+}
+
+.parse-button .link-drawing .link-path:nth-child(2) {
+  animation-delay: 0.2s;
 }
 
 .parse-button:hover:not(:disabled) {
@@ -184,8 +187,12 @@ const handleClear = () => {
   box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
 }
 
+.parse-button:active:not(:disabled) {
+  transform: translateY(0) scale(0.96);
+  box-shadow: none;
+}
+
 .parse-button:disabled {
-  opacity: 0.6;
   cursor: not-allowed;
 }
 
@@ -195,6 +202,18 @@ const handleClear = () => {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes link-draw {
+  0% {
+    stroke-dashoffset: 50;
+  }
+  50% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -50;
   }
 }
 </style>

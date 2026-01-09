@@ -250,7 +250,7 @@ const handleDownload = async () => {
   gap: 16px;
   padding: 16px;
   background: var(--bg-secondary);
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid var(--border-primary);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
