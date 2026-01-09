@@ -28,47 +28,11 @@
         </svg>
         <span>找不到音频文件</span>
       </div>
-      <div v-else class="audio-preview">
-        <audio
-            ref="audioRef"
-            :src="audioUrl"
-            preload="auto"
-            @ended="onEnded"
-            @loadedmetadata="onLoadedMetadata"
-            @pause="onPause"
-            @play="onPlay"
-            @timeupdate="onTimeUpdate"
-        />
-
-        <!-- 播放按钮 -->
-        <button :disabled="!audioUrl" class="play-btn" @click="togglePlay">
-          <svg v-if="!isPlaying" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M8 5v14l11-7z"/>
-          </svg>
-          <svg v-else fill="currentColor" viewBox="0 0 24 24">
-            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-          </svg>
-        </button>
-
-        <!-- 进度条 -->
-        <div
-            ref="progressRef"
-            :class="{ dragging: isDragging }"
-            class="progress-wrapper"
-            @click="onProgressClick"
-            @mousedown="onProgressMouseDown"
-        >
-          <div class="progress-track">
-            <div :style="{ width: progressPercent + '%' }" class="progress-fill"></div>
-            <div :style="{ left: progressPercent + '%' }" class="progress-thumb"></div>
-          </div>
-        </div>
-
-        <!-- 时间显示 -->
-        <span class="time-display">
-          {{ formatTime(isDragging ? dragTime : currentTime) }} / {{ formatTime(duration) }}
-        </span>
-      </div>
+      <AudioPlayer
+          v-else
+          :src="audioUrl"
+          :show-time-before-progress="true"
+      />
     </div>
 
     <!-- 来源类型（音频任务） -->
@@ -86,8 +50,9 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted, onUnmounted, watch} from 'vue';
+import {ref, onMounted, onUnmounted, watch} from 'vue';
 import {readFile} from '@tauri-apps/plugin-fs';
+import {AudioPlayer} from '@/components/common';
 import {checkAudioExists, getAudioAbsolutePath} from '@/services/storage/localAudioStorage';
 
 const props = defineProps({
@@ -99,85 +64,6 @@ const props = defineProps({
 
 const audioExists = ref(true);
 const audioUrl = ref('');
-
-// 音频播放器状态
-const audioRef = ref(null);
-const progressRef = ref(null);
-const isPlaying = ref(false);
-const currentTime = ref(0);
-const duration = ref(0);
-const isDragging = ref(false);
-const dragTime = ref(0);
-
-// 进度百分比
-const progressPercent = computed(() => {
-  if (duration.value === 0) return 0;
-  const time = isDragging.value ? dragTime.value : currentTime.value;
-  return (time / duration.value) * 100;
-});
-
-// 格式化时间
-const formatTime = (seconds) => {
-  if (!seconds || !isFinite(seconds)) return '0:00';
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-};
-
-// 播放控制
-const togglePlay = () => {
-  if (!audioRef.value) return;
-  if (isPlaying.value) {
-    audioRef.value.pause();
-  } else {
-    audioRef.value.play();
-  }
-};
-
-const onPlay = () => isPlaying.value = true;
-const onPause = () => isPlaying.value = false;
-const onEnded = () => isPlaying.value = false;
-const onLoadedMetadata = () => duration.value = audioRef.value?.duration || 0;
-const onTimeUpdate = () => {
-  if (!isDragging.value) {
-    currentTime.value = audioRef.value?.currentTime || 0;
-  }
-};
-
-// 进度条点击
-const onProgressClick = (e) => {
-  if (!audioRef.value || !progressRef.value) return;
-  const rect = progressRef.value.getBoundingClientRect();
-  const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-  audioRef.value.currentTime = percent * duration.value;
-};
-
-// 进度条拖动
-const onProgressMouseDown = (e) => {
-  if (!audioRef.value || !progressRef.value) return;
-  isDragging.value = true;
-  updateDragTime(e);
-
-  const onMouseMove = (e) => updateDragTime(e);
-  const onMouseUp = () => {
-    if (audioRef.value) {
-      audioRef.value.currentTime = dragTime.value;
-    }
-    isDragging.value = false;
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('mouseup', onMouseUp);
-  };
-
-  document.addEventListener('mousemove', onMouseMove);
-  document.addEventListener('mouseup', onMouseUp);
-};
-
-const updateDragTime = (e) => {
-  if (!progressRef.value) return;
-  const rect = progressRef.value.getBoundingClientRect();
-  const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-  dragTime.value = percent * duration.value;
-};
 
 // 从文件路径创建 blob URL
 const createBlobUrlFromPath = async (path) => {
@@ -301,113 +187,6 @@ onUnmounted(() => {
 .audio-missing svg {
   width: 20px;
   height: 20px;
-}
-
-.audio-preview {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.audio-preview audio {
-  display: none;
-}
-
-.play-btn {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--accent-color);
-  border: none;
-  border-radius: 50%;
-  color: #ffffff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.play-btn svg {
-  width: 16px;
-  height: 16px;
-}
-
-.play-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
-  transform: scale(1.05);
-}
-
-.play-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.progress-wrapper {
-  flex: 1;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 0 4px;
-  min-width: 80px;
-  user-select: none;
-}
-
-.progress-wrapper.dragging {
-  cursor: grabbing;
-}
-
-.progress-track {
-  position: relative;
-  width: 100%;
-  height: 4px;
-  background: var(--bg-primary);
-  border-radius: 2px;
-  overflow: visible;
-  transition: height 0.15s ease;
-}
-
-.progress-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  background: var(--accent-color);
-  border-radius: 2px;
-}
-
-.progress-thumb {
-  position: absolute;
-  top: 50%;
-  width: 12px;
-  height: 12px;
-  background: var(--accent-color);
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.progress-wrapper:hover .progress-thumb,
-.progress-wrapper.dragging .progress-thumb {
-  transform: translate(-50%, -50%) scale(1.2);
-  box-shadow: 0 2px 8px rgba(74, 158, 255, 0.4);
-}
-
-.progress-wrapper:hover .progress-track,
-.progress-wrapper.dragging .progress-track {
-  height: 6px;
-}
-
-.time-display {
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-family: 'SF Mono', Monaco, monospace;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .source-info,

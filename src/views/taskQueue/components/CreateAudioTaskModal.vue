@@ -61,7 +61,11 @@
               <!-- 音频预览 -->
               <div v-if="audioPreviewUrl" class="audio-preview">
                 <label class="preview-label">音频预览</label>
-                <audio :src="audioPreviewUrl" controls class="audio-player"></audio>
+                <AudioPlayer 
+                    :src="audioPreviewUrl" 
+                    :show-time-before-progress="true"
+                    class="custom-audio-player"
+                />
               </div>
             </div>
 
@@ -100,7 +104,9 @@ import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { readFile } from '@tauri-apps/plugin-fs';
+import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { useTaskQueueStore, TASK_TYPE } from '@/stores';
+import { AudioPlayer } from '@/components/common';
 import { copyAudioToAppData, detectFileType, getSupportedExtensions } from '@/services/storage/localAudioStorage';
 
 const props = defineProps({
@@ -126,12 +132,52 @@ const canSubmit = computed(() => {
   return selectedFile.value && (fileType.value === 'audio' || extractedAudioPath.value);
 });
 
-// 监听弹窗关闭
-watch(() => props.visible, (newVal) => {
-  if (!newVal) {
+// 拖拽事件取消函数
+const unlistenDragDrop = ref(null);
+
+// 监听弹窗显示状态，启用/禁用拖拽事件监听
+watch(() => props.visible, async (newVal) => {
+  if (newVal) {
+    // 弹窗打开时，启用拖拽事件监听
+    setupDragDropListener();
+  } else {
+    // 弹窗关闭时，移除拖拽事件监听并重置状态
+    if (unlistenDragDrop.value) {
+      unlistenDragDrop.value();
+      unlistenDragDrop.value = null;
+    }
     resetState();
   }
 });
+
+// 设置 Tauri 拖拽事件监听
+const setupDragDropListener = async () => {
+  try {
+    const webview = getCurrentWebview();
+    unlistenDragDrop.value = await webview.onDragDropEvent(async (event) => {
+      if (!props.visible) return; // 确保弹窗是打开状态
+      
+      if (event.payload.type === 'over') {
+        isDragging.value = true;
+      } else if (event.payload.type === 'leave') {
+        isDragging.value = false;
+      } else if (event.payload.type === 'drop') {
+        isDragging.value = false;
+        const paths = event.payload.paths;
+        if (paths && paths.length > 0 && !selectedFile.value) {
+          const path = paths[0];
+          const ext = path.split('.').pop().toLowerCase();
+          const supportedExts = getSupportedExtensions();
+          if (supportedExts.includes(ext)) {
+            await processSelectedFile(path);
+          }
+        }
+      }
+    });
+  } catch (e) {
+    console.warn('设置拖拽事件监听失败:', e);
+  }
+};
 
 // 重置状态
 const resetState = () => {
@@ -149,10 +195,14 @@ const resetState = () => {
   extractedAudioPath.value = '';
 };
 
-// 组件卸载时清理 blob URL
+// 组件卸载时清理 blob URL 和拖拽事件监听
 onUnmounted(() => {
   if (audioPreviewUrl.value && audioPreviewUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(audioPreviewUrl.value);
+  }
+  if (unlistenDragDrop.value) {
+    unlistenDragDrop.value();
+    unlistenDragDrop.value = null;
   }
 });
 
@@ -202,22 +252,10 @@ const handleSelectFile = async () => {
   }
 };
 
-// 处理拖拽
+// 处理拖拽（保留 DOM 事件作为备用，实际由 Tauri 事件处理）
 const handleDrop = async (e) => {
+  // Tauri 2 使用 onDragDropEvent 处理，此处仅保留事件绑定形式
   isDragging.value = false;
-  const files = e.dataTransfer?.files;
-  if (files && files.length > 0) {
-    const file = files[0];
-    const ext = file.name.split('.').pop().toLowerCase();
-    const supportedExts = getSupportedExtensions();
-    if (supportedExts.includes(ext)) {
-      // Tauri 拖拽需要通过 path 属性获取路径
-      const path = file.path || e.dataTransfer.getData('text/plain');
-      if (path) {
-        await processSelectedFile(path);
-      }
-    }
-  }
 };
 
 // 处理选择的文件
@@ -543,9 +581,10 @@ const handleSubmit = async () => {
   color: var(--text-secondary);
 }
 
-.audio-player {
-  width: 100%;
-  height: 40px;
+.custom-audio-player {
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
 }
 

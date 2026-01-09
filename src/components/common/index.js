@@ -1,6 +1,7 @@
 /**
  * 通用组件统一导出
  */
+export { default as AudioPlayer } from './AudioPlayer.vue'
 export { default as CloseMask } from './CloseMask.vue'
 export { default as CustomSelect } from './CustomSelect.vue'
 export { default as Sidebar } from './Sidebar.vue'
