@@ -6,6 +6,7 @@ import {useVideoParse} from './composables/useVideoParse.js';
 import {useHistoryStore} from '@/stores';
 import ParseInputBar from './components/ParseInputBar.vue';
 import VideoResultCard from './components/VideoResultCard.vue';
+import LocalTaskCard from './components/LocalTaskCard.vue';
 import CopywritingPanel from './components/CopywritingPanel.vue';
 import ParseEmpty from './components/ParseEmpty.vue';
 import ParseLoading from './components/ParseLoading.vue';
@@ -22,6 +23,8 @@ const {
   selectedQuality,
   currentHistoryId,
   isRestoring,
+  isLocalTask,
+  localTaskInfo,
   handleParse,
   clearInput,
   resetState,
@@ -84,26 +87,33 @@ onMounted(async () => {
     />
 
 
-    <!-- 解析结果 -->
+    <!-- 解析结果（网络视频） -->
     <VideoResultCard
-        v-if="videoInfo"
+        v-if="videoInfo && !isLocalTask"
         v-model:selectedQuality="selectedQuality"
         :qualityOptions="qualityOptions"
         :videoInfo="videoInfo"
     />
 
+    <!-- 本地任务卡片 -->
+    <LocalTaskCard
+        v-if="isLocalTask && localTaskInfo"
+        :taskInfo="localTaskInfo"
+    />
+
     <!-- 文案模块 -->
     <CopywritingPanel
-        v-if="videoInfo"
+        v-if="videoInfo || (isLocalTask && localTaskInfo)"
         :currentHistoryId="currentHistoryId"
-        :videoInfo="videoInfo"
+        :videoInfo="isLocalTask ? null : videoInfo"
+        :localTaskInfo="isLocalTask ? localTaskInfo : null"
     />
 
     <!-- 解析中状态 -->
     <ParseLoading v-if="isParsing && !videoInfo"/>
 
     <!-- 空状态 -->
-    <ParseEmpty v-if="!videoInfo && !isParsing"/>
+    <ParseEmpty v-if="!videoInfo && !isParsing && !isLocalTask"/>
   </div>
 </template>
 

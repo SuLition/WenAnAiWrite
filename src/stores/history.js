@@ -106,12 +106,16 @@ export const useHistoryStore = defineStore('history', {
      * @param {string} record.videoId - 视频ID
      * @param {string} record.originalText - 原始文案
      * @param {string} record.rewrittenText - 改写文案
-     * @param {Object} record.videoInfo - 完整视频信息（新增）
-     * @param {Array} record.qualityOptions - 画质选项（新增）
+     * @param {Object} record.videoInfo - 完整视频信息
+     * @param {Array} record.qualityOptions - 画质选项
+     * @param {boolean} record.isLocal - 是否为本地任务
+     * @param {string} record.localType - 本地任务类型 (audio/text)
+     * @param {string} record.localAudioPath - 本地音频文件路径
+     * @param {string} record.localSourceType - 原始文件类型 (audio/video)
      */
     async add(record) {
-      // 根据 videoId 和 platform 去重
-      if (record.videoId) {
+      // 根据 videoId 和 platform 去重（本地任务不去重）
+      if (record.videoId && !record.isLocal) {
         this.list = this.list.filter(item =>
           !(item.videoId === record.videoId && item.platform === record.platform)
         )

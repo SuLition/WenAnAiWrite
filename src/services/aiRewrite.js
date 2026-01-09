@@ -20,9 +20,10 @@ function getPrompt(style) {
  * 豆包AI改写
  * @param {string} text - 原始文案
  * @param {string} style - 改写风格
+ * @param {string} customPrompt - 自定义提示词（追加到默认提示词之后）
  * @returns {Promise<string>} - 改写后的文案
  */
-export async function rewriteWithDoubao(text, style = 'professional') {
+export async function rewriteWithDoubao(text, style = 'professional', customPrompt = '') {
   const configStore = useConfigStore()
   const config = configStore.config.doubao || {}
   console.log('[AIRewrite] 读取豆包配置:', { apiKey: config.apiKey ? '已配置' : '未配置', model: config.model })
@@ -31,7 +32,12 @@ export async function rewriteWithDoubao(text, style = 'professional') {
     throw new Error('请先配置豆包 API Key')
   }
   
-  const prompt = getPrompt(style)
+  let prompt = getPrompt(style)
+  
+  // 追加自定义提示词
+  if (customPrompt && customPrompt.trim()) {
+    prompt = prompt + '\n\n额外要求: ' + customPrompt.trim()
+  }
   
   const requestBody = JSON.stringify({
     model: config.model || 'doubao-seed-1-6-251015',
@@ -90,16 +96,17 @@ export async function rewriteWithDoubao(text, style = 'professional') {
  * @param {string} text - 原始文案
  * @param {string} style - 改写风格
  * @param {string} model - AI模型
+ * @param {string} customPrompt - 自定义提示词
  * @returns {Promise<string>} - 改写后的文案
  */
-export async function rewriteText(text, style = 'professional', model = 'doubao') {
+export async function rewriteText(text, style = 'professional', model = 'doubao', customPrompt = '') {
   if (!text || !text.trim()) {
     throw new Error('请输入要改写的文案')
   }
 
   switch (model) {
     case 'doubao':
-      return rewriteWithDoubao(text, style)
+      return rewriteWithDoubao(text, style, customPrompt)
     case 'deepseek':
       throw new Error('DeepSeek模型暂未配置')
     case 'qianwen':
@@ -107,6 +114,6 @@ export async function rewriteText(text, style = 'professional', model = 'doubao'
     case 'hunyuan':
       throw new Error('元宝模型暂未配置')
     default:
-      return rewriteWithDoubao(text, style)
+      return rewriteWithDoubao(text, style, customPrompt)
   }
 }

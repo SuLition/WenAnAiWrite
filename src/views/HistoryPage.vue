@@ -90,6 +90,23 @@ const clearAll = async () => {
         <!-- 左侧封面图 -->
         <div class="card-cover">
           <img v-if="item.cover" :alt="item.title" :src="item.cover"/>
+          <!-- 本地音频图标 -->
+          <div v-else-if="item.platform === 'local' && item.localType === 'audio'" class="cover-placeholder audio">
+            <svg fill="none" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+              <path d="M9 18V7l8-2v11" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              <circle cx="7" cy="18" r="2" fill="currentColor"/>
+              <circle cx="15" cy="16" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+          <!-- 本地文案图标 -->
+          <div v-else-if="item.platform === 'local' && item.localType === 'text'" class="cover-placeholder text">
+            <svg fill="none" viewBox="0 0 24 24">
+              <rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+              <path d="M8 7h8M8 11h8M8 15h5" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+            </svg>
+          </div>
+          <!-- 默认占位图 -->
           <div v-else class="cover-placeholder">
             <svg fill="none" viewBox="0 0 24 24">
               <path
@@ -99,7 +116,7 @@ const clearAll = async () => {
           </div>
           <!-- 平台标签 -->
           <span :style="{ background: getPlatformColor(item.platform) }" class="platform-badge">
-            {{ getPlatformName(item.platform) }}
+            {{ getPlatformName(item.platform, item.localType) }}
           </span>
         </div>
 
@@ -142,6 +159,23 @@ const clearAll = async () => {
         <!-- 左侧封面图 -->
         <div class="card-cover">
           <img v-if="item.cover" :alt="item.title" :src="item.cover"/>
+          <!-- 本地音频图标 -->
+          <div v-else-if="item.platform === 'local' && item.localType === 'audio'" class="cover-placeholder audio">
+            <svg fill="none" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+              <path d="M9 18V7l8-2v11" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              <circle cx="7" cy="18" r="2" fill="currentColor"/>
+              <circle cx="15" cy="16" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+          <!-- 本地文案图标 -->
+          <div v-else-if="item.platform === 'local' && item.localType === 'text'" class="cover-placeholder text">
+            <svg fill="none" viewBox="0 0 24 24">
+              <rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+              <path d="M8 7h8M8 11h8M8 15h5" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+            </svg>
+          </div>
+          <!-- 默认占位图 -->
           <div v-else class="cover-placeholder">
             <svg fill="none" viewBox="0 0 24 24">
               <path
@@ -151,7 +185,7 @@ const clearAll = async () => {
           </div>
           <!-- 平台标签 -->
           <span :style="{ background: getPlatformColor(item.platform) }" class="platform-badge">
-            {{ getPlatformName(item.platform) }}
+            {{ getPlatformName(item.platform, item.localType) }}
           </span>
         </div>
 
@@ -322,6 +356,28 @@ const clearAll = async () => {
 .cover-placeholder svg {
   width: 40px;
   height: 40px;
+}
+
+/* 本地音频占位图样式 */
+.cover-placeholder.audio {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(124, 58, 237, 0.05) 100%);
+  color: #7c3aed;
+}
+
+.cover-placeholder.audio svg {
+  width: 48px;
+  height: 48px;
+}
+
+/* 本地文案占位图样式 */
+.cover-placeholder.text {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%);
+  color: #3b82f6;
+}
+
+.cover-placeholder.text svg {
+  width: 48px;
+  height: 48px;
 }
 
 .platform-badge {

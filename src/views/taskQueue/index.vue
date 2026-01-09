@@ -1,8 +1,10 @@
 <script setup>
-import {computed} from 'vue';
+import {computed, ref} from 'vue';
 import {useTaskQueueStore, useConfigStore, TASK_STATUS, TASK_TYPE} from '@/stores';
 import {storeToRefs} from 'pinia';
 import {getPlatformName, getPlatformColor} from '@/constants/platforms';
+import CreateAudioTaskModal from './components/CreateAudioTaskModal.vue';
+import CreateTextTaskModal from './components/CreateTextTaskModal.vue';
 
 // Store
 const taskQueueStore = useTaskQueueStore();
@@ -16,6 +18,33 @@ const hasActiveTasks = computed(() => taskQueueStore.hasPendingTasks);
 // 卡片动画配置
 const cardAnimation = computed(() => configStore.appearance.cardAnimation || 'fade');
 const hasCardAnimation = computed(() => cardAnimation.value !== 'none');
+
+// 创建任务下拉菜单状态
+const showCreateMenu = ref(false);
+const showAudioModal = ref(false);
+const showTextModal = ref(false);
+
+// 切换创建菜单
+const toggleCreateMenu = () => {
+  showCreateMenu.value = !showCreateMenu.value;
+};
+
+// 关闭创建菜单
+const closeCreateMenu = () => {
+  showCreateMenu.value = false;
+};
+
+// 打开音频任务弹窗
+const openAudioModal = () => {
+  showCreateMenu.value = false;
+  showAudioModal.value = true;
+};
+
+// 打开文案任务弹窗
+const openTextModal = () => {
+  showCreateMenu.value = false;
+  showTextModal.value = true;
+};
 
 // 获取任务类型文本
 const getTypeText = (type) => {
@@ -103,12 +132,39 @@ const formatTime = (timestamp) => {
 </script>
 
 <template>
-  <div class="task-queue-page">
+  <div class="task-queue-page" @click="closeCreateMenu">
     <div class="page-header">
       <h1 class="page-title">任务队列 <span v-if="taskCount > 0" class="task-count">({{ taskCount }})</span></h1>
-      <button v-if="tasks.length > 0 && !hasActiveTasks" class="clear-button" @click="handleClearCompleted">
-        清空已完成
-      </button>
+      <div class="header-actions">
+        <!-- 创建任务按钮 -->
+        <div class="create-task-wrapper" @click.stop>
+          <button class="create-btn" title="创建任务" @click="toggleCreateMenu">
+            <svg fill="none" viewBox="0 0 24 24">
+              <path d="M12 4v16m-8-8h16" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+            </svg>
+          </button>
+          <!-- 下拉菜单 -->
+          <Transition name="fade">
+            <div v-if="showCreateMenu" class="create-menu">
+              <button class="menu-item" @click="openAudioModal">
+                <svg fill="none" viewBox="0 0 24 24">
+                  <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                </svg>
+                <span>音频识别</span>
+              </button>
+              <button class="menu-item" @click="openTextModal">
+                <svg fill="none" viewBox="0 0 24 24">
+                  <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                </svg>
+                <span>文案改写</span>
+              </button>
+            </div>
+          </Transition>
+        </div>
+        <button v-if="tasks.length > 0 && !hasActiveTasks" class="clear-button" @click="handleClearCompleted">
+          清空已完成
+        </button>
+      </div>
     </div>
 
     <!-- 空状态 -->
@@ -145,7 +201,7 @@ const formatTime = (timestamp) => {
           </div>
           <!-- 平台标签 -->
           <span :style="{ background: getPlatformColor(task.platform) }" class="platform-badge">
-            {{ getPlatformName(task.platform) }}
+            {{ getPlatformName(task.platform, task.data?.localType) }}
           </span>
         </div>
 
@@ -214,7 +270,7 @@ const formatTime = (timestamp) => {
           </div>
           <!-- 平台标签 -->
           <span :style="{ background: getPlatformColor(task.platform) }" class="platform-badge">
-            {{ getPlatformName(task.platform) }}
+            {{ getPlatformName(task.platform, task.data?.localType) }}
           </span>
         </div>
 
@@ -267,6 +323,12 @@ const formatTime = (timestamp) => {
         </div>
       </div>
     </div>
+
+    <!-- 音频任务弹窗 -->
+    <CreateAudioTaskModal v-model:visible="showAudioModal" />
+    
+    <!-- 文案任务弹窗 -->
+    <CreateTextTaskModal v-model:visible="showTextModal" />
   </div>
 </template>
 
@@ -603,5 +665,98 @@ const formatTime = (timestamp) => {
   position: absolute;
   left: 0;
   right: 0;
+}
+
+/* 头部操作区 */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 创建任务按钮容器 */
+.create-task-wrapper {
+  position: relative;
+}
+
+.create-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-color);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all var(--transition-normal) var(--easing-ease);
+}
+
+.create-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.create-btn:hover {
+  background: var(--accent-hover);
+  transform: scale(1.05);
+}
+
+/* 创建任务下拉菜单 */
+.create-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 160px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+
+.menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast) var(--easing-ease);
+}
+
+.menu-item svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.menu-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.menu-item:hover svg {
+  color: var(--accent-color);
+}
+
+/* 菜单淡入淡出动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 </style>

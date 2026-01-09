@@ -24,6 +24,8 @@ export function useVideoParse() {
     const selectedQuality = ref('');
     const currentHistoryId = ref(null);
     const isRestoring = ref(false); // 恢复模式标志，防止 watch 触发 resetState
+    const isLocalTask = ref(false); // 本地任务标志
+    const localTaskInfo = ref(null); // 本地任务信息
 
     // Store
     const historyStore = useHistoryStore();
@@ -156,6 +158,8 @@ export function useVideoParse() {
         qualityOptions.value = [];
         selectedQuality.value = '';
         currentHistoryId.value = null;
+        isLocalTask.value = false;
+        localTaskInfo.value = null;
     };
 
     /**
@@ -172,6 +176,36 @@ export function useVideoParse() {
         // 进入恢复模式，防止 platform watch 触发 resetState
         isRestoring.value = true;
         console.log('[restoreFromHistory] 进入恢复模式');
+
+        // 检查是否为本地任务
+        if (historyItem.isLocal) {
+            console.log('[restoreFromHistory] 本地任务恢复');
+            isLocalTask.value = true;
+            localTaskInfo.value = {
+                id: historyItem.id,
+                title: historyItem.title,
+                localType: historyItem.localType,
+                localAudioPath: historyItem.localAudioPath,
+                localSourceType: historyItem.localSourceType,
+                originalText: historyItem.originalText,
+                rewrittenText: historyItem.rewrittenText,
+                createTime: historyItem.createTime
+            };
+            currentHistoryId.value = historyItem.id;
+            platform.value = 'local';
+            videoInfo.value = null;
+            qualityOptions.value = [];
+            selectedQuality.value = '';
+            
+            await nextTick();
+            isRestoring.value = false;
+            console.log('[restoreFromHistory] 本地任务恢复完成');
+            return true;
+        }
+
+        // 网络视频恢复（原有逻辑）
+        isLocalTask.value = false;
+        localTaskInfo.value = null;
 
         // 恢复基本信息
         videoUrl.value = historyItem.originalUrl || '';
@@ -224,6 +258,8 @@ export function useVideoParse() {
         selectedQuality,
         currentHistoryId,
         isRestoring, // 暴露恢复模式标志
+        isLocalTask, // 本地任务标志
+        localTaskInfo, // 本地任务信息
         // 方法
         handleParse,
         clearInput,

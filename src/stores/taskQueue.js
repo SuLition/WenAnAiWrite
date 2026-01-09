@@ -60,9 +60,13 @@ export const useTaskQueueStore = defineStore('taskQueue', {
      * 添加任务
      * @param {Object} taskData - 任务数据
      * @param {string} taskData.type - 任务类型 (extract/rewrite/download)
+     * @param {string} taskData.title - 任务标题
+     * @param {string} taskData.cover - 封面图
+     * @param {string} taskData.platform - 平台
      * @param {number} taskData.historyId - 关联的历史记录ID
      * @param {Object} taskData.videoInfo - 完整视频信息
      * @param {Object} taskData.params - 任务参数
+     * @param {Object} taskData.data - 本地任务数据
      */
     addTask(taskData) {
       const taskId = `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
@@ -72,11 +76,12 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         id: taskId,
         type: taskData.type, // 'extract' / 'rewrite' / 'download'
         historyId: taskData.historyId,
-        cover: videoInfo.cover || '',
-        title: videoInfo.title || '未命名任务',
-        platform: videoInfo.platform || '',
+        cover: taskData.cover || videoInfo.cover || '',
+        title: taskData.title || videoInfo.title || '未命名任务',
+        platform: taskData.platform || videoInfo.platform || '',
         videoInfo: videoInfo,
         params: taskData.params || {},
+        data: taskData.data || {}, // 本地任务扩展数据
         status: TASK_STATUS.QUEUED,
         error: null,
         createdAt: Date.now(),
@@ -143,6 +148,53 @@ export const useTaskQueueStore = defineStore('taskQueue', {
       
       try {
         const { recognizeAudioWithData } = await import('@/services/tencentAsr.js')
+        const historyStore = useHistoryStore()
+        
+        // 本地音频识别
+        if (task.data?.isLocal && task.data?.localType === 'audio') {
+          const { getAudioAbsolutePath, checkAudioExists } = await import('@/services/storage/localAudioStorage.js')
+          const { readFile } = await import('@tauri-apps/plugin-fs')
+          
+          const audioPath = task.data.localAudioPath
+          const exists = await checkAudioExists(audioPath)
+          if (!exists) {
+            throw new Error('找不到音频文件')
+          }
+          
+          const absolutePath = await getAudioAbsolutePath(audioPath)
+          const audioData = await readFile(absolutePath)
+          
+          const MAX_SIZE = 5 * 1024 * 1024
+          const finalData = audioData.length > MAX_SIZE ? audioData.slice(0, MAX_SIZE) : audioData
+          
+          const chunkSize = 32768
+          let binary = ''
+          for (let i = 0; i < finalData.length; i += chunkSize) {
+            const chunk = finalData.subarray(i, Math.min(i + chunkSize, finalData.length))
+            binary += String.fromCharCode.apply(null, chunk)
+          }
+          const result = await recognizeAudioWithData(btoa(binary), () => {})
+          
+          // 创建历史记录
+          const historyId = await historyStore.add({
+            title: task.title,
+            platform: 'local',
+            originalText: result || '未识别到语音内容',
+            isLocal: true,
+            localType: 'audio',
+            localAudioPath: audioPath,
+            localSourceType: task.data.localSourceType
+          })
+          
+          task.historyId = historyId
+          task.status = TASK_STATUS.SUCCESS
+          toast.success(`「${task.title}」文案提取完成`)
+          
+          setTimeout(() => this.removeTask(task.id), 1500)
+          return
+        }
+        
+        // 网络视频文案提取（原有逻辑）
         const { downloadAudioData } = await import('@/services/download/downloadService.js')
         
         const videoInfo = task.videoInfo
@@ -222,7 +274,6 @@ export const useTaskQueueStore = defineStore('taskQueue', {
           throw new Error('该平台文案提取服务开发中')
         }
         
-        const historyStore = useHistoryStore()
         await historyStore.update(task.historyId, { originalText: result || '未识别到语音内容' })
         
         task.status = TASK_STATUS.SUCCESS
@@ -250,6 +301,38 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         const { rewriteText } = await import('@/services/aiRewrite.js')
         const historyStore = useHistoryStore()
         
+        // 本地文案改写
+        if (task.data?.isLocal && task.data?.localType === 'text') {
+          const originalText = task.data.originalText
+          if (!originalText) {
+            throw new Error('文案内容不能为空')
+          }
+          
+          const model = task.data.model || 'doubao'
+          const style = task.data.style || 'normal'
+          const customPrompt = task.data.customPrompt || ''
+          
+          const result = await rewriteText(originalText, style, model, customPrompt)
+          
+          // 创建历史记录
+          const historyId = await historyStore.add({
+            title: task.title,
+            platform: 'local',
+            originalText: originalText,
+            rewrittenText: result,
+            isLocal: true,
+            localType: 'text'
+          })
+          
+          task.historyId = historyId
+          task.status = TASK_STATUS.SUCCESS
+          toast.success(`「${task.title}」文案改写完成`)
+          
+          setTimeout(() => this.removeTask(task.id), 1500)
+          return
+        }
+        
+        // 网络视频文案改写（原有逻辑）
         const history = historyStore.list.find(h => h.id === task.historyId)
         const originalText = history?.originalText
         

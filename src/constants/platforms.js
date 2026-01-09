@@ -6,22 +6,34 @@
 export const PLATFORM_NAMES = {
   bilibili: 'Bilibili',
   douyin: '抖音',
-  xiaohongshu: '小红书'
+  xiaohongshu: '小红书',
+  local: '本地任务'
 }
 
 // 平台颜色配置
 export const PLATFORM_COLORS = {
   bilibili: '#00a1d6',
   douyin: '#000000',
-  xiaohongshu: '#ff2442'
+  xiaohongshu: '#ff2442',
+  local: '#7c3aed'
+}
+
+// 本地任务类型名称
+export const LOCAL_TYPE_NAMES = {
+  audio: '本地音频',
+  text: '本地文案'
 }
 
 /**
  * 获取平台显示名称
  * @param {string} platform - 平台标识
+ * @param {string} localType - 本地任务类型（audio/text）
  * @returns {string} 平台显示名称
  */
-export function getPlatformName(platform) {
+export function getPlatformName(platform, localType) {
+  if (platform === 'local' && localType) {
+    return LOCAL_TYPE_NAMES[localType] || '本地任务'
+  }
   return PLATFORM_NAMES[platform] || platform
 }
 

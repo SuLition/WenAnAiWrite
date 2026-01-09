@@ -56,6 +56,18 @@
     {
       "identifier": "fs:allow-stat",
       "allow": [{ "path": "$APPDATA/**" }, { "path": "$APPDATA" }]
+    },
+    {
+      "identifier": "fs:allow-read-file",
+      "allow": [{ "path": "$APPDATA/**" }, { "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [{ "path": "$APPDATA/**" }]
+    },
+    {
+      "identifier": "fs:allow-copy-file",
+      "allow": [{ "path": "$APPDATA/**" }, { "path": "**" }]
     }
   ]
 }

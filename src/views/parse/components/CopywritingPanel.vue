@@ -12,10 +12,14 @@ import {useHistoryStore, useTaskQueueStore} from '@/stores';
 const props = defineProps({
   videoInfo: {
     type: Object,
-    required: true
+    default: null
   },
   currentHistoryId: {
     type: [Number, null],
+    default: null
+  },
+  localTaskInfo: {
+    type: Object,
     default: null
   }
 });
@@ -95,6 +99,8 @@ watch(() => historyStore.list, (newList) => {
 
 // 获取音频URL
 const audioUrl = computed(() => {
+  // 本地任务不显示音频播放器（本地音频已在 LocalTaskCard 中处理）
+  if (props.localTaskInfo) return null;
   if (!props.videoInfo?.audioStream?.url) return null;
   const platform = props.videoInfo.platform;
   const url = props.videoInfo.audioStream.url;
