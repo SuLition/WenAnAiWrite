@@ -13,7 +13,6 @@ const configStore = useConfigStore()
 
 // 窗口效果选项
 const WINDOW_EFFECT_OPTIONS = [
-  {value: 'none', label: '无效果'},
   {value: 'mica', label: 'Mica (云母)'}
 ]
 
@@ -23,7 +22,7 @@ const CARD_ANIMATION_OPTIONS = PAGE_TRANSITION_OPTIONS
 // 动画速率选项（转换为下拉格式）
 const ANIMATION_SPEED_SELECT_OPTIONS = ANIMATION_SPEED_OPTIONS.map(opt => ({
   value: opt.value,
-  label: `${opt.label} - ${opt.description}`
+  label: opt.label
 }))
 
 // 计算属性
@@ -161,7 +160,7 @@ const onCardAnimationChange = (value) => {
       <div class="setting-item">
         <div class="setting-row">
           <svg class="setting-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <rect x="3" y="3" width="18" height="14" rx="2"/>
+            <rect height="14" rx="2" width="18" x="3" y="3"/>
             <path d="M3 10h18"/>
           </svg>
           <span class="setting-label">卡片动画</span>

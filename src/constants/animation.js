@@ -5,17 +5,16 @@
 
 // 动画速率模式配置
 export const ANIMATION_SPEED_MODES = {
-    disabled: {value: 0.0, label: '禁用动画', description: '几乎无动画'},
-    fast: {value: 0.3, label: '快速', description: '高效流畅'},
-    normal: {value: 0.5, label: '标准', description: '推荐'},
-    elegant: {value: 1.0, label: '优雅', description: '视觉享受'}
+    disabled: {value: 0.0, label: '禁用动画'},
+    fast: {value: 0.3, label: '快速'},
+    normal: {value: 0.5, label: '标准'},
+    elegant: {value: 1.0, label: '优雅'}
 }
 
 // 速率选项（用于设置页选择）
 export const ANIMATION_SPEED_OPTIONS = Object.entries(ANIMATION_SPEED_MODES).map(([key, config]) => ({
     value: key,
-    label: config.label,
-    description: config.description
+    label: config.label
 }))
 
 // 基础过渡时间配置（毫秒，便于 calc 计算）

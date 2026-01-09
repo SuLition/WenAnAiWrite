@@ -17,9 +17,6 @@ export * from './download'
 // 存储服务
 export * from './storage'
 
-// 主题服务
-export * from './theme'
-
 // AI 改写服务
 export { default as aiRewrite } from './aiRewrite'
 

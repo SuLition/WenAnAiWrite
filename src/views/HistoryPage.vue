@@ -80,7 +80,7 @@ const clearAll = async () => {
     </div>
 
     <!-- 加载中 -->
-    <div v-if="loading" class="empty-state">
+    <div v-if="loading && historyList.length !== 0" class="empty-state">
       <p class="empty-text">加载中...</p>
     </div>
 
