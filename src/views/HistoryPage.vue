@@ -68,15 +68,46 @@ const clearAll = async () => {
     toast.success('已清空');
   }
 };
+
+
+const handlePushHistory = async () => {
+  const testPlatforms = ['douyin', 'bilibili', 'xiaohongshu', 'kuaishou'];
+  const randomPlatform = testPlatforms[Math.floor(Math.random() * testPlatforms.length)];
+  const randomId = Math.random().toString(36).substring(2, 10);
+
+  await historyStore.add({
+    cover: `https://picsum.photos/seed/${randomId}/400/300`,
+    title: `测试视频标题 #${randomId}`,
+    platform: randomPlatform,
+    originalUrl: `https://www.${randomPlatform}.com/video/${randomId}`,
+    videoId: randomId,
+    originalText: '这是一段测试用的原始文案内容，用于验证历史记录功能是否正常工作。',
+    rewrittenText: ''
+  });
+}
+
+const handleRemoveOneHistory = async () => {
+  if (historyStore.list.length > 0) {
+    await historyStore.delete(historyStore.list[0].id);
+  }
+};
 </script>
 
 <template>
   <div class="history-page">
     <div class="history-header">
       <h1 class="page-title">历史记录</h1>
-      <button v-if="historyList.length > 0" class="clear-button" @click="clearAll">
-        清空记录
-      </button>
+      <div>
+        <button v-if="historyList.length > 0" class="clear-button" @click="clearAll">
+          清空记录
+        </button>
+        <button class="clear-button" @click="handlePushHistory">
+          增加记录
+        </button>
+        <button class="clear-button" @click="handleRemoveOneHistory">
+          删除记录
+        </button>
+      </div>
     </div>
 
     <!-- 加载中 -->
@@ -476,7 +507,7 @@ const clearAll = async () => {
 .history-list > .slide-up-leave-active,
 .history-list > .zoom-leave-active {
   position: absolute;
-  left: 40px;
-  right: 40px;
+  left: 0;
+  right: 0;
 }
 </style>

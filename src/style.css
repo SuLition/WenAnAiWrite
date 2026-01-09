@@ -227,7 +227,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     border-radius: 50%;
-    background: 
+    background:
         radial-gradient(farthest-side, var(--accent-color, #4a9eff) 94%, #0000) top/3px 3px no-repeat,
         conic-gradient(#0000 30%, var(--accent-color, #4a9eff));
     -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 3px), #000 0);

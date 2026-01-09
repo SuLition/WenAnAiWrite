@@ -584,7 +584,7 @@ const formatTime = (timestamp) => {
 .task-list > .slide-up-leave-active,
 .task-list > .zoom-leave-active {
   position: absolute;
-  left: 40px;
-  right: 40px;
+  left: 0;
+  right: 0;
 }
 </style>
