@@ -53,6 +53,7 @@ export const EASING = {
   easeOut: 'ease-out',
   easeInOut: 'ease-in-out',
   smooth: 'cubic-bezier(0.4, 0, 0.2, 1)',  // Material Design
+  bounce: 'cubic-bezier(0.34, 1.56, 0.64, 1)',  // 轻微弹跳
 }
 
 /**
@@ -104,6 +105,7 @@ export function generateAnimationVars(speedMultiplier = 1.0) {
     '--easing-ease-out': EASING.easeOut,
     '--easing-ease-in-out': EASING.easeInOut,
     '--easing-smooth': EASING.smooth,
+    '--easing-bounce': EASING.bounce,
   }
 }
 

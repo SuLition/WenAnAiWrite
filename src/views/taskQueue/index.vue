@@ -95,8 +95,7 @@ const formatTime = (timestamp) => {
     </div>
 
     <!-- 空状态 -->
-    <Transition name="fade">
-      <div v-if="tasks.length === 0" class="empty-state">
+    <div v-if="tasks.length === 0" class="empty-state">
       <svg class="empty-icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
         <path
             d="M772.89 858.21c-5.12 0-10.25-1.96-14.15-5.87l-142-142.24c-5.71-5.72-13.32-8.88-21.41-8.88H455.57c-116.5 0-211.28-94.78-211.28-211.28v-87.46c0-11.05 8.95-20 20-20s20 8.95 20 20v87.46c0 94.44 76.84 171.28 171.28 171.28h139.76c18.79 0 36.44 7.32 49.71 20.62l142 142.24c7.8 7.82 7.79 20.48-0.02 28.28-3.9 3.9-9.02 5.85-14.13 5.85z"
@@ -112,11 +111,10 @@ const formatTime = (timestamp) => {
             fill="currentColor"/>
       </svg>
       <p class="empty-text">暂时没有什么东西</p>
-      </div>
-    </Transition>
+    </div>
 
     <!-- 任务列表 -->
-    <TransitionGroup v-if="hasCardAnimation" :name="cardAnimation" tag="div" class="task-list">
+    <TransitionGroup v-if="hasCardAnimation" :name="cardAnimation" class="task-list" tag="div">
       <div v-for="task in tasks" :key="task.id" class="task-card">
         <!-- 左侧封面图 -->
         <div class="card-cover">
