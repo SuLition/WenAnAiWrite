@@ -212,6 +212,56 @@ fn get_file_stat(path: String) -> Result<FileStat, String> {
     })
 }
 
+/// 递归计算文件夹大小
+fn calc_dir_size(path: &std::path::Path) -> u64 {
+    if !path.exists() {
+        return 0;
+    }
+    
+    let mut size = 0u64;
+    if let Ok(entries) = std::fs::read_dir(path) {
+        for entry in entries.flatten() {
+            let entry_path = entry.path();
+            if entry_path.is_file() {
+                if let Ok(metadata) = entry_path.metadata() {
+                    size += metadata.len();
+                }
+            } else if entry_path.is_dir() {
+                size += calc_dir_size(&entry_path);
+            }
+        }
+    }
+    size
+}
+
+/// 获取文件夹大小
+#[tauri::command]
+fn get_folder_size(path: String) -> Result<u64, String> {
+    let folder_path = std::path::Path::new(&path);
+    Ok(calc_dir_size(folder_path))
+}
+
+/// 清空文件夹内容（保留文件夹本身）
+#[tauri::command]
+fn clear_folder(path: String) -> Result<(), String> {
+    let folder_path = std::path::Path::new(&path);
+    if !folder_path.exists() {
+        return Ok(());
+    }
+    
+    if let Ok(entries) = std::fs::read_dir(folder_path) {
+        for entry in entries.flatten() {
+            let entry_path = entry.path();
+            if entry_path.is_file() {
+                let _ = std::fs::remove_file(&entry_path);
+            } else if entry_path.is_dir() {
+                let _ = std::fs::remove_dir_all(&entry_path);
+            }
+        }
+    }
+    Ok(())
+}
+
 /// 从视频提取音频的返回结果
 #[derive(Clone, Serialize)]
 struct ExtractAudioResult {
@@ -965,6 +1015,8 @@ pub fn run() {
             download_file, 
             get_download_dir, 
             get_file_stat,
+            get_folder_size,
+            clear_folder,
             extract_audio,
             open_folder, 
             fetch_data, 

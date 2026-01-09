@@ -3,13 +3,12 @@ import {ref, reactive, onMounted} from 'vue'
 import {toast} from 'vue-sonner'
 import {useConfigStore} from '@/stores'
 import {selectDownloadDir, getSystemDownloadDir} from '@/services/download/tauriDownload.js'
-import {clearHistory} from '@/services/storage'
 import {clearParseHistory as clearParseHistoryStorage} from '@/services/storage/parseHistoryStorage'
 import {clearBilibiliAuth} from '@/services/auth/bilibiliAuth'
-import {removeFile, FILE_NAMES} from '@/services/storage/fileStorage'
 import {stat} from '@tauri-apps/plugin-fs'
 import {appDataDir} from '@tauri-apps/api/path'
 import {invoke} from '@tauri-apps/api/core'
+import {FILE_NAMES} from '@/services/storage/fileStorage'
 
 // Stores
 const configStore = useConfigStore()
@@ -25,7 +24,7 @@ const form = reactive({
 
 // 缓存大小
 const cacheSize = reactive({
-  downloadHistory: '0 B',
+  mediaCache: '0 B',
   bilibiliAuth: '0 B',
   appConfig: '0 B',
   parseHistory: '0 B'
@@ -55,26 +54,52 @@ const getFileSize = async (filename) => {
   }
 }
 
+// 获取文件夹大小
+const getFolderSize = async (folderName) => {
+  try {
+    const dir = await appDataDir()
+    const separator = dir.endsWith('\\') || dir.endsWith('/') ? '' : '\\'
+    const fullPath = `${dir}${separator}${folderName}`
+    return await invoke('get_folder_size', { path: fullPath })
+  } catch (e) {
+    console.error(`获取文件夹大小失败 ${folderName}:`, e)
+    return 0
+  }
+}
+
 // 加载缓存大小
 const loadCacheSize = async () => {
-  const [downloadSize, bilibiliSize, configSize, parseSize] = await Promise.all([
-    getFileSize(FILE_NAMES.DOWNLOAD_HISTORY),
+  // 音/视频缓存 = audio 文件夹 + temp 文件夹
+  const [audioSize, tempSize, bilibiliSize, configSize, parseSize] = await Promise.all([
+    getFolderSize('audio'),
+    getFolderSize('temp'),
     getFileSize(FILE_NAMES.BILIBILI_AUTH),
     getFileSize(FILE_NAMES.CONFIG),
     getFileSize(FILE_NAMES.PARSE_HISTORY)
   ])
 
-  cacheSize.downloadHistory = formatBytes(downloadSize)
+  cacheSize.mediaCache = formatBytes(audioSize + tempSize)
   cacheSize.bilibiliAuth = formatBytes(bilibiliSize)
   cacheSize.appConfig = formatBytes(configSize)
   cacheSize.parseHistory = formatBytes(parseSize)
 }
 
-// 清除下载历史
-const clearDownloadHistory = async () => {
-  await clearHistory()
-  await loadCacheSize()
-  toast.success('下载历史已清除')
+// 清除音/视频缓存
+const clearMediaCache = async () => {
+  try {
+    const dir = await appDataDir()
+    const separator = dir.endsWith('\\') || dir.endsWith('/') ? '' : '\\'
+    
+    // 清理 audio 和 temp 文件夹
+    await invoke('clear_folder', { path: `${dir}${separator}audio` })
+    await invoke('clear_folder', { path: `${dir}${separator}temp` })
+    
+    await loadCacheSize()
+    toast.success('音/视频缓存已清除')
+  } catch (e) {
+    console.error('清除缓存失败:', e)
+    toast.error('清除缓存失败')
+  }
 }
 
 // 清除B站登录信息
@@ -235,12 +260,12 @@ onMounted(() => {
       <p class="section-desc">数据库存储配置、登录信息、下载记录等数据。</p>
 
       <div class="cache-list">
-        <!-- 下载历史 -->
+        <!-- 音/视频缓存 -->
         <div class="cache-item">
-          <span class="cache-name">下载历史</span>
+          <span class="cache-name">音/视频缓存</span>
           <div class="cache-control">
-            <input :value="cacheSize.downloadHistory" class="cache-input" readonly/>
-            <button class="cache-clear-btn" title="清除" @click="clearDownloadHistory">
+            <input :value="cacheSize.mediaCache" class="cache-input" readonly/>
+            <button class="cache-clear-btn" title="清除" @click="clearMediaCache">
               <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16">
                 <path
                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
