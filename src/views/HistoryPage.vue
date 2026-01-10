@@ -111,7 +111,7 @@ const handleAddHistory = async () => {
       <h1 class="page-title">历史记录</h1>
       <div class="header-actions">
         <button v-if="historyList.length > 0" class="clear-button" @click="clearAll">清空记录</button>
-        <button class="clear-button" @click="handleAddHistory">添加历史</button>
+        <!--        <button class="clear-button" @click="handleAddHistory">添加历史</button>-->
       </div>
     </div>
 

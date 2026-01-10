@@ -214,12 +214,12 @@ const handleRemoveLatestTask = () => {
             </div>
           </Transition>
         </div>
-        <button class="clear-button" title="添加任务" @click="handlePushTask">
-          添加任务
-        </button>
-        <button class="clear-button" title="添加任务" @click="handleRemoveLatestTask">
-          移除任务
-        </button>
+        <!--        <button class="clear-button" title="添加任务" @click="handlePushTask">-->
+        <!--          添加任务-->
+        <!--        </button>-->
+        <!--        <button class="clear-button" title="添加任务" @click="handleRemoveLatestTask">-->
+        <!--          移除任务-->
+        <!--        </button>-->
       </div>
     </div>
 
