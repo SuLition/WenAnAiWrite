@@ -1,6 +1,6 @@
 [package]
 name = "app"
-version = "0.2.8"
+version = "0.2.9"
 description = "CatParse - 视频解析工具"
 authors = ["you"]
 license = ""
@@ -32,6 +32,7 @@ uuid = { version = "1", features = ["v4"] }
 dirs = "5"
 window-vibrancy = "0.5"
 tauri-plugin-process = "2"
+tauri-plugin-single-instance = "2"
 
 # 仅在桌面平台启用更新插件
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
