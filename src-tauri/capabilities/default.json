@@ -28,7 +28,6 @@
     "core:path:default",
     "updater:default",
     "process:allow-restart",
-    "single-instance:default",
     {
       "identifier": "http:allow-fetch",
       "allow": [
