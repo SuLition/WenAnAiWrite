@@ -1,9 +1,11 @@
 <script setup>
-import {watch, onMounted} from 'vue';
+import {watch, onMounted, computed} from 'vue';
 import {useRoute} from 'vue-router';
 import {toast} from 'vue-sonner';
+import {Motion, AnimatePresence} from 'motion-v';
 import {useVideoParse} from './composables/useVideoParse.js';
-import {useHistoryStore} from '@/stores';
+import {useHistoryStore, useConfigStore} from '@/stores';
+import {getCardAnimation} from '@/constants/motionAnimations';
 import ParseInputBar from './components/ParseInputBar.vue';
 import VideoResultCard from './components/VideoResultCard.vue';
 import LocalTaskCard from './components/LocalTaskCard.vue';
@@ -13,6 +15,13 @@ import ParseLoading from './components/ParseLoading.vue';
 
 const route = useRoute();
 const historyStore = useHistoryStore();
+const configStore = useConfigStore();
+
+// 卡片动画配置
+const currentAnimation = computed(() => {
+  const anim = configStore.appearance.cardAnimation || 'fade';
+  return getCardAnimation(anim);
+});
 
 const {
   videoUrl,
@@ -88,26 +97,55 @@ onMounted(async () => {
 
 
     <!-- 解析结果（网络视频） -->
-    <VideoResultCard
-        v-if="videoInfo && !isLocalTask"
-        v-model:selectedQuality="selectedQuality"
-        :qualityOptions="qualityOptions"
-        :videoInfo="videoInfo"
-    />
+    <AnimatePresence mode="wait">
+      <Motion
+          v-if="videoInfo && !isLocalTask"
+          :key="'video-' + currentHistoryId"
+          :animate="currentAnimation?.animate"
+          :exit="currentAnimation?.exit"
+          :initial="currentAnimation?.initial"
+          :transition="currentAnimation?.transition"
+      >
+        <VideoResultCard
+            v-model:selectedQuality="selectedQuality"
+            :qualityOptions="qualityOptions"
+            :videoInfo="videoInfo"
+        />
+      </Motion>
+    </AnimatePresence>
 
     <!-- 本地任务卡片 -->
-    <LocalTaskCard
-        v-if="isLocalTask && localTaskInfo"
-        :taskInfo="localTaskInfo"
-    />
+    <AnimatePresence mode="wait">
+      <Motion
+          v-if="isLocalTask && localTaskInfo"
+          :key="'local-' + currentHistoryId"
+          :animate="currentAnimation?.animate"
+          :exit="currentAnimation?.exit"
+          :initial="currentAnimation?.initial"
+          :transition="currentAnimation?.transition"
+      >
+        <LocalTaskCard :taskInfo="localTaskInfo"/>
+      </Motion>
+    </AnimatePresence>
 
     <!-- 文案模块 -->
-    <CopywritingPanel
-        v-if="videoInfo || (isLocalTask && localTaskInfo)"
-        :currentHistoryId="currentHistoryId"
-        :videoInfo="isLocalTask ? null : videoInfo"
-        :localTaskInfo="isLocalTask ? localTaskInfo : null"
-    />
+    <AnimatePresence mode="wait">
+      <Motion
+          v-if="videoInfo || (isLocalTask && localTaskInfo)"
+          :key="'copy-' + currentHistoryId"
+          :animate="currentAnimation?.animate"
+          :exit="currentAnimation?.exit"
+          :initial="currentAnimation?.initial"
+          :transition="{ ...currentAnimation?.transition, delay: 0.1 }"
+          :style="{ flex: 3, minHeight: 0, display: 'flex' }"
+      >
+        <CopywritingPanel
+            :currentHistoryId="currentHistoryId"
+            :videoInfo="isLocalTask ? null : videoInfo"
+            :localTaskInfo="isLocalTask ? localTaskInfo : null"
+        />
+      </Motion>
+    </AnimatePresence>
 
     <!-- 解析中状态 -->
     <ParseLoading v-if="isParsing && !videoInfo"/>

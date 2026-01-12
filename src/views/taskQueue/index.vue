@@ -364,7 +364,7 @@ const handleRemoveLatestTask = () => {
             stroke-width="33"
         />
       </svg>
-      <p class="empty-text">暂时没有任务</p>
+      <p class="empty-text">没有什么东西</p>
     </div>
 
     <!-- 任务列表 -->
