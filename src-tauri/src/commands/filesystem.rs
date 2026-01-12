@@ -11,8 +11,7 @@ pub struct FileStat {
 /// 获取文件信息
 #[tauri::command]
 pub fn get_file_stat(path: String) -> Result<FileStat, String> {
-    let metadata =
-        std::fs::metadata(&path).map_err(|e| format!("获取文件信息失败: {}", e))?;
+    let metadata = std::fs::metadata(&path).map_err(|e| format!("获取文件信息失败: {}", e))?;
     Ok(FileStat {
         size: metadata.len(),
     })

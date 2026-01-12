@@ -52,16 +52,16 @@ pub async fn extract_audio(
         .args(&[
             "-i",
             &video_path,
-            "-vn",            // 不处理视频
+            "-vn", // 不处理视频
             "-acodec",
-            "libmp3lame",     // MP3 编码
+            "libmp3lame", // MP3 编码
             "-ab",
-            "128k",           // 音频比特率
+            "128k", // 音频比特率
             "-ar",
-            "44100",          // 采样率
+            "44100", // 采样率
             "-ac",
-            "2",              // 声道数
-            "-y",             // 覆盖已存在的文件
+            "2",  // 声道数
+            "-y", // 覆盖已存在的文件
             audio_path.to_str().unwrap(),
         ])
         .output()

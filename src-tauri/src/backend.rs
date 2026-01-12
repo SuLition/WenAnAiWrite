@@ -234,8 +234,7 @@ pub async fn start_backend(app: tauri::AppHandle) -> Result<String, String> {
     }
 
     // 获取可执行文件所在目录
-    let exe_path =
-        std::env::current_exe().map_err(|e| format!("获取可执行文件路径失败: {}", e))?;
+    let exe_path = std::env::current_exe().map_err(|e| format!("获取可执行文件路径失败: {}", e))?;
     let exe_dir = exe_path
         .parent()
         .ok_or("无法获取可执行文件目录")?

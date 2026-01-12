@@ -41,25 +41,23 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         // 进程插件（用于重启应用）
         .plugin(tauri_plugin_process::init())
-        .on_menu_event(|app, event| {
-            match event.id.as_ref() {
-                "show" => {
-                    if let Some(window) = app.get_webview_window("main") {
-                        let _ = window.show();
-                        let _ = window.set_focus();
-                    }
+        .on_menu_event(|app, event| match event.id.as_ref() {
+            "show" => {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.set_focus();
                 }
-                "quit" => {
-                    stop_backend_service();
-                    std::process::exit(0);
-                }
-                _ => {}
             }
+            "quit" => {
+                stop_backend_service();
+                std::process::exit(0);
+            }
+            _ => {}
         })
         .setup(|app| {
             // 在后台线程启动后端服务（不阻塞主窗口显示）
             start_backend_service(app.handle());
-            
+
             // 初始化托盘（默认隐藏，配置菜单事件）
             if let Some(tray) = app.tray_by_id("main-tray") {
                 // 默认隐藏托盘
@@ -71,7 +69,8 @@ pub fn run() {
                         button: MouseButton::Left,
                         button_state: MouseButtonState::Up,
                         ..
-                    } = event {
+                    } = event
+                    {
                         if let Some(window) = tray.app_handle().get_webview_window("main") {
                             let _ = window.show();
                             let _ = window.set_focus();
@@ -93,7 +92,7 @@ pub fn run() {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 // 检查关闭行为设置
                 let close_action = get_close_action();
-                
+
                 if close_action == "minimize" {
                     // 最小化到托盘
                     api.prevent_close();
@@ -101,19 +100,19 @@ pub fn run() {
                 } else {
                     // 直接退出
                     api.prevent_close();
-                    
+
                     // 发送关闭中事件到前端
                     let _ = window.emit("app-closing", ());
-                    
+
                     // 在后台线程停止服务并关闭窗口
                     let window_clone = window.clone();
                     std::thread::spawn(move || {
                         // 停止后端服务
                         stop_backend_service();
-                        
+
                         // 稍微延迟确保前端收到事件
                         std::thread::sleep(std::time::Duration::from_millis(300));
-                        
+
                         // 关闭窗口
                         let _ = window_clone.destroy();
                     });
@@ -121,14 +120,14 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
-            download_file, 
-            get_download_dir, 
+            download_file,
+            get_download_dir,
             get_file_stat,
             get_folder_size,
             clear_folder,
             extract_audio,
-            open_folder, 
-            fetch_data, 
+            open_folder,
+            fetch_data,
             resolve_redirect,
             start_backend,
             stop_backend,

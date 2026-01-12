@@ -167,9 +167,7 @@ pub async fn download_file(
     }
 
     // 刷新缓冲区
-    writer
-        .flush()
-        .map_err(|e| format!("刷新文件失败: {}", e))?;
+    writer.flush().map_err(|e| format!("刷新文件失败: {}", e))?;
 
     // 发送完成事件
     let _ = app.emit(
