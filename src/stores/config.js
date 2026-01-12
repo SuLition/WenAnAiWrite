@@ -8,6 +8,9 @@ import { readJsonFile, writeJsonFile, removeFile, FILE_NAMES } from '@/services/
 import { defaultConfig } from '@/services/config/defaultConfig'
 import { applyAnimationVars } from '@/constants'
 
+// localStorage 缓存 key
+const CACHE_KEY = 'catparse_config_cache'
+
 /**
  * 深度合并对象
  */
@@ -51,28 +54,51 @@ export const useConfigStore = defineStore('config', {
   actions: {
     /**
      * 加载配置（异步）
+     * 优化：先从 localStorage 快速读取缓存，再异步从文件更新
      */
     async load() {
+      // 1. 先从 localStorage 快速读取缓存（同步，毫秒级）
       try {
-        // 从文件读取配置
+        const cached = localStorage.getItem(CACHE_KEY)
+        if (cached) {
+          this.config = deepMerge(defaultConfig, JSON.parse(cached))
+        }
+      } catch (e) {
+        // 缓存读取失败，忽略
+      }
+
+      // 2. 异步从文件读取最新配置
+      try {
         const stored = await readJsonFile(FILE_NAMES.CONFIG)
         if (stored) {
           this.config = deepMerge(defaultConfig, stored)
-        } else {
+          // 同步更新缓存
+          localStorage.setItem(CACHE_KEY, JSON.stringify(this.config))
+        } else if (!localStorage.getItem(CACHE_KEY)) {
+          // 文件和缓存都没有，使用默认配置
           this.config = { ...defaultConfig }
         }
       } catch (e) {
         console.error('加载配置失败:', e)
-        this.config = { ...defaultConfig }
+        if (!localStorage.getItem(CACHE_KEY)) {
+          this.config = { ...defaultConfig }
+        }
       }
       return this.config
     },
 
     /**
      * 保存配置（异步）
+     * 同时写入 localStorage 缓存和文件
      */
     async save(config) {
       this.config = JSON.parse(JSON.stringify(config))
+      // 同时写入 localStorage 缓存
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(config))
+      } catch (e) {
+        console.warn('写入配置缓存失败:', e)
+      }
       return await writeJsonFile(FILE_NAMES.CONFIG, config)
     },
 
@@ -110,6 +136,12 @@ export const useConfigStore = defineStore('config', {
      */
     async reset() {
       this.config = { ...defaultConfig }
+      // 清除 localStorage 缓存
+      try {
+        localStorage.removeItem(CACHE_KEY)
+      } catch (e) {
+        // 忽略
+      }
       await removeFile(FILE_NAMES.CONFIG)
       return this.config
     },

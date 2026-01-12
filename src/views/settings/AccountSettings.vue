@@ -7,32 +7,69 @@ import {
   getUserInfo,
   saveBilibiliAuth,
   loadBilibiliAuth,
+  loadBilibiliAuthSync,
   clearBilibiliAuth
 } from '@/services/auth/bilibiliAuth.js'
 import {
   loadXhsAuth,
+  loadXhsAuthSync,
   clearXhsAuth,
   performLogin as performXhsLogin
 } from '@/services/auth/xiaohongshuAuth.js'
 
-// B站登录状态
+// 同步初始化 B 站登录状态（避免闪烁）
+const initBilibiliState = () => {
+  const auth = loadBilibiliAuthSync()
+  if (auth && auth.cookies?.SESSDATA) {
+    return {
+      isLoggedIn: true,
+      status: 'success',
+      statusText: '已登录',
+      userInfo: auth.userInfo || null,
+      loadingUserInfo: false
+    }
+  }
+  return {
+    isLoggedIn: false,
+    status: 'idle',
+    statusText: '',
+    userInfo: null,
+    loadingUserInfo: false
+  }
+}
+
+// 同步初始化小红书登录状态（避免闪烁）
+const initXhsState = () => {
+  const auth = loadXhsAuthSync()
+  if (auth && auth.cookie) {
+    return {
+      isLoggedIn: true,
+      status: 'success',
+      statusText: '已登录',
+      cookiePreview: auth.cookie.length > 30 ? auth.cookie.substring(0, 30) + '...' : auth.cookie
+    }
+  }
+  return {
+    isLoggedIn: false,
+    status: 'idle',
+    statusText: '',
+    cookiePreview: ''
+  }
+}
+
+// B站登录状态（同步初始化）
+const bilibiliInitState = initBilibiliState()
 const bilibiliLoginState = reactive({
-  isLoggedIn: false,
+  ...bilibiliInitState,
   qrcode: null,
   qrcodeKey: null,
-  status: 'idle', // idle | loading | scanning | confirming | success | expired | error
-  statusText: '',
-  userInfo: null,
-  pollTimer: null,
-  loadingUserInfo: false
+  pollTimer: null
 })
 
-// 小红书登录状态
+// 小红书登录状态（同步初始化）
+const xhsInitState = initXhsState()
 const xhsLoginState = reactive({
-  isLoggedIn: false,
-  status: 'idle', // idle | loading | success | error
-  statusText: '',
-  cookiePreview: ''
+  ...xhsInitState
 })
 
 // 加载B站登录状态
@@ -42,17 +79,27 @@ const loadBilibiliLoginState = async () => {
     bilibiliLoginState.isLoggedIn = true
     bilibiliLoginState.status = 'success'
     bilibiliLoginState.statusText = '已登录'
-    bilibiliLoginState.loadingUserInfo = true
-    try {
-      const userInfo = await getUserInfo()
+    
+    // 1. 先显示缓存的用户信息（立即显示，无加载延迟）
+    if (auth.userInfo) {
+      bilibiliLoginState.userInfo = auth.userInfo
+      bilibiliLoginState.loadingUserInfo = false
+    } else {
+      bilibiliLoginState.loadingUserInfo = true
+    }
+    
+    // 2. 后台静默刷新用户信息
+    getUserInfo().then(userInfo => {
       if (userInfo) {
         bilibiliLoginState.userInfo = userInfo
+        // 更新缓存（包含用户信息）
+        saveBilibiliAuth({ cookies: auth.cookies, userInfo })
       }
-    } catch (e) {
+    }).catch(e => {
       console.warn('获取B站用户信息失败:', e)
-    } finally {
+    }).finally(() => {
       bilibiliLoginState.loadingUserInfo = false
-    }
+    })
   } else {
     bilibiliLoginState.isLoggedIn = false
     bilibiliLoginState.status = 'idle'
@@ -97,14 +144,16 @@ const startPolling = () => {
           bilibiliLoginState.statusText = '登录成功'
           bilibiliLoginState.isLoggedIn = true
           bilibiliLoginState.qrcode = null
-          saveBilibiliAuth({cookies: result.cookies}).then(() => {
-            // 保存完成后获取用户信息
-          })
+          // 先保存 cookies，然后获取用户信息并一起更新
           try {
             const userInfo = await getUserInfo()
             bilibiliLoginState.userInfo = userInfo
+            // 保存登录信息（包含用户信息）
+            await saveBilibiliAuth({ cookies: result.cookies, userInfo })
           } catch (e) {
             console.warn('获取用户信息失败:', e)
+            // 仍然保存 cookies
+            await saveBilibiliAuth({ cookies: result.cookies })
           }
           toast.success('B站登录成功')
           break

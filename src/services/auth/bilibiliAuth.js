@@ -11,6 +11,9 @@ import { fetchWithRetry } from '@/utils/request.js'
 let authCache = null
 let cacheLoaded = false
 
+// localStorage 缓存 key
+const BILIBILI_CACHE_KEY = 'catparse_bilibili_auth_cache'
+
 /**
  * 调用代理 API
  */
@@ -185,6 +188,12 @@ export async function saveBilibiliAuth(authData) {
     if (success) {
       authCache = data
       cacheLoaded = true
+      // 同步写入 localStorage 缓存
+      try {
+        localStorage.setItem(BILIBILI_CACHE_KEY, JSON.stringify(data))
+      } catch (e) {
+        // 忽略
+      }
     }
     return success
   } catch (e) {
@@ -199,7 +208,7 @@ export async function saveBilibiliAuth(authData) {
  */
 export async function loadBilibiliAuth() {
   try {
-    // 如果有缓存，直接返回
+    // 如果有内存缓存，直接返回
     if (cacheLoaded && authCache !== null) {
       return authCache
     }
@@ -208,11 +217,40 @@ export async function loadBilibiliAuth() {
     const data = await readJsonFile(FILE_NAMES.BILIBILI_AUTH)
     authCache = data
     cacheLoaded = true
+    
+    // 同步更新 localStorage 缓存
+    if (data) {
+      try {
+        localStorage.setItem(BILIBILI_CACHE_KEY, JSON.stringify(data))
+      } catch (e) {
+        // 忽略
+      }
+    }
+    
     return data
   } catch (e) {
     console.error('加载B站登录信息失败:', e)
     return null
   }
+}
+
+/**
+ * 同步从 localStorage 读取缓存（用于初始化，避免闪烁）
+ * @returns {object|null}
+ */
+export function loadBilibiliAuthSync() {
+  try {
+    const cached = localStorage.getItem(BILIBILI_CACHE_KEY)
+    if (cached) {
+      const data = JSON.parse(cached)
+      authCache = data
+      cacheLoaded = true
+      return data
+    }
+  } catch (e) {
+    // 忽略
+  }
+  return null
 }
 
 /**
@@ -222,6 +260,12 @@ export async function clearBilibiliAuth() {
   await removeFile(FILE_NAMES.BILIBILI_AUTH)
   authCache = null
   cacheLoaded = true
+  // 清除 localStorage 缓存
+  try {
+    localStorage.removeItem(BILIBILI_CACHE_KEY)
+  } catch (e) {
+    // 忽略
+  }
 }
 
 /**
@@ -267,6 +311,7 @@ export default {
   getUserInfo,
   saveBilibiliAuth,
   loadBilibiliAuth,
+  loadBilibiliAuthSync,
   clearBilibiliAuth,
   isLoggedIn,
   getAuthCookie,

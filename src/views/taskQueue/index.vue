@@ -19,6 +19,13 @@ const {tasks} = storeToRefs(taskQueueStore);
 // 计算属性
 const taskCount = computed(() => taskQueueStore.totalCount);
 
+// 空状态动画时长
+const animationDuration = computed(() => {
+  const speed = configStore.appearance?.animationSpeed || 'normal'
+  const durations = {disabled: 0, fast: 0.4, normal: 0.6, elegant: 1}
+  return durations[speed] || 1
+})
+
 // 卡片动画配置
 const currentAnimation = computed(() => {
   const anim = configStore.appearance.cardAnimation || 'fade';
@@ -239,20 +246,125 @@ const handleRemoveLatestTask = () => {
     <!-- 空状态 -->
     <div v-if="tasks.length === 0" class="empty-state">
       <svg class="empty-icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-        <path
-            d="M772.89 858.21c-5.12 0-10.25-1.96-14.15-5.87l-142-142.24c-5.71-5.72-13.32-8.88-21.41-8.88H455.57c-116.5 0-211.28-94.78-211.28-211.28v-87.46c0-11.05 8.95-20 20-20s20 8.95 20 20v87.46c0 94.44 76.84 171.28 171.28 171.28h139.76c18.79 0 36.44 7.32 49.71 20.62l142 142.24c7.8 7.82 7.79 20.48-0.02 28.28-3.9 3.9-9.02 5.85-14.13 5.85z"
-            fill="currentColor"/>
-        <path
-            d="M842 655.86c-5.12 0-10.24-1.95-14.15-5.86L417.71 239.58c-19.85-19.86-46.24-30.8-74.31-30.8-34.85 0-67.35 17.22-86.92 46.05l-41.57 61.24 49.87 0.26c11.05 0.06 19.95 9.06 19.9 20.1-0.06 11.01-9 19.9-20 19.9h-0.11l-59.35-0.31a34.904 34.904 0 0 1-30.74-18.66 34.868 34.868 0 0 1 2.01-35.91l46.9-69.08a144.908 144.908 0 0 1 120.02-63.59c38.76 0 75.2 15.1 102.6 42.52l410.15 410.42c7.81 7.81 7.8 20.48 0 28.28-3.9 3.9-9.02 5.85-14.14 5.85zM804.09 756.85c-5.12 0-10.24-1.95-14.14-5.86L687.07 648.11c-7.81-7.81-7.81-20.47 0-28.28 7.81-7.81 20.47-7.81 28.28 0l102.88 102.88c7.81 7.81 7.81 20.47 0 28.28a19.92 19.92 0 0 1-14.14 5.86zM470.36 848.34c-3.55 0-7.15-0.95-10.4-2.93-9.43-5.75-12.41-18.06-6.65-27.49l49.42-80.98c5.75-9.43 18.06-12.41 27.49-6.65 9.43 5.75 12.41 18.06 6.65 27.49l-49.42 80.98c-3.77 6.18-10.35 9.58-17.09 9.58z"
-            fill="currentColor"/>
-        <path
-            d="M511.11 858.07h-74.47c-11.05 0-20-8.95-20-20s8.95-20 20-20h74.47c11.05 0 20 8.95 20 20s-8.95 20-20 20zM359.8 848.34c-3.55 0-7.15-0.95-10.4-2.93-9.43-5.75-12.41-18.06-6.65-27.49l49.42-80.98c5.75-9.43 18.06-12.41 27.49-6.65 9.43 5.75 12.41 18.06 6.65 27.49l-49.42 80.98c-3.77 6.18-10.35 9.58-17.09 9.58z"
-            fill="currentColor"/>
-        <path
-            d="M381.84 858.07h-52.91c-11.05 0-20-8.95-20-20s8.95-20 20-20h52.91c11.05 0 20 8.95 20 20s-8.95 20-20 20zM584.99 587.26h-52.88c-93.89 0-170.28-76.39-170.28-170.28 0-16.6 9.91-31.42 25.24-37.77 15.33-6.35 32.82-2.87 44.55 8.86l27.66 27.66c7.81 7.81 7.81 20.47 0 28.28-7.81 7.81-20.47 7.81-28.28 0l-27.66-27.66c-0.3-0.3-0.42-0.42-0.96-0.19-0.55 0.23-0.55 0.39-0.55 0.82 0 71.83 58.44 130.28 130.28 130.28h52.88c11.05 0 20 8.95 20 20s-8.95 20-20 20z"
-            fill="currentColor"/>
+        <!-- 鸟身体主体 -->
+        <Motion
+            :animate="{ pathLength: 1, opacity: 1 }"
+            :initial="{ pathLength: 0, opacity: 0 }"
+            :transition="{ duration: animationDuration * 0.4, ease: 'linear' }"
+            as="path"
+            d="m 265.87146,394.85861 0.87744,118.45759 c 0,0 8.77464,72.82947 43.87318,109.68294 35.09855,36.85347 111.43788,57.9126 111.43788,57.9126 0,0 164.08568,4.3872 185.14481,2.63232 21.05913,-1.75488 168.47305,155.31104 168.47305,155.31104"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="33"
+        />
+        <!-- 翅膀 -->
+        <Motion
+            :animate="{ pathLength: 1, opacity: 1 }"
+            :initial="{ pathLength: 0, opacity: 0 }"
+            :transition="{ duration: animationDuration * 0.3, delay: animationDuration * 0.15, ease: 'linear' }"
+            as="path"
+            d="m 443.11911,428.20223 c 0,0 -20.18166,-37.73093 -55.2802,-33.34362 -35.09855,4.38733 10.52956,109.68295 32.46615,132.497 21.93658,22.81405 109.68295,57.9126 162.33076,42.11825"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="33"
+        />
+        <!-- 尾巴 -->
+        <Motion
+            :animate="{ pathLength: 1, opacity: 1 }"
+            :initial="{ pathLength: 0, opacity: 0 }"
+            :transition="{ duration: animationDuration * 0.2, delay: animationDuration * 0.35, ease: 'linear' }"
+            as="path"
+            d="M 695.82861,633.5287 811.65382,743.21165"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="33"
+        />
+        <!-- 头部和喘 -->
+        <Motion
+            :animate="{ pathLength: 1, opacity: 1 }"
+            :initial="{ pathLength: 0, opacity: 0 }"
+            :transition="{ duration: animationDuration * 0.4, delay: animationDuration * 0.4, ease: 'linear' }"
+            as="path"
+            d="m 267.62639,336.94602 c 0,0 -77.21679,4.38732 -80.72665,-9.65211 -3.50985,-14.03941 71.07455,-117.58011 85.11397,-121.08997 14.03942,-3.50985 57.91259,-40.36333 115.8252,-8.77463 57.91259,31.58869 458.03597,442.24164 458.03597,442.24164"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="33"
+        />
+        <!-- 头顶羽毛 -->
+        <Motion
+            :animate="{ pathLength: 1, opacity: 1 }"
+            :initial="{ pathLength: 0, opacity: 0 }"
+            :transition="{ duration: animationDuration * 0.15, delay: animationDuration * 0.5, ease: 'linear' }"
+            as="path"
+            d="m 336.30245,246.33336 c 0,5.06868 -3.10018,26.79171 -3.10018,26.79171"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="33"
+        />
+        <!-- 左腿 -->
+        <Motion
+            :animate="{ pathLength: 1, opacity: 1 }"
+            :initial="{ pathLength: 0, opacity: 0 }"
+            :transition="{ duration: animationDuration * 0.2, delay: animationDuration * 0.6, ease: 'linear' }"
+            as="path"
+            d="m 410.65295,743.21165 -55.2802,89.50131"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="33"
+        />
+        <!-- 左脚 -->
+        <Motion
+            :animate="{ pathLength: 1, opacity: 1 }"
+            :initial="{ pathLength: 0, opacity: 0 }"
+            :transition="{ duration: animationDuration * 0.15, delay: animationDuration * 0.7, ease: 'linear' }"
+            as="path"
+            d="m 311.49957,838.85517 80.72665,-0.87744"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="33"
+        />
+        <!-- 右腿 -->
+        <Motion
+            :animate="{ pathLength: 1, opacity: 1 }"
+            :initial="{ pathLength: 0, opacity: 0 }"
+            :transition="{ duration: animationDuration * 0.2, delay: animationDuration * 0.75, ease: 'linear' }"
+            as="path"
+            d="m 524.72322,744.96659 -53.52527,85.99143"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="33"
+        />
+        <!-- 右脚 -->
+        <Motion
+            :animate="{ pathLength: 1, opacity: 1 }"
+            :initial="{ pathLength: 0, opacity: 0 }"
+            :transition="{ duration: animationDuration * 0.15, delay: animationDuration * 0.85, ease: 'linear' }"
+            as="path"
+            d="m 425.56984,837.10029 93.01114,-0.87744"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="33"
+        />
       </svg>
-      <p class="empty-text">暂时没有什么东西</p>
+      <p class="empty-text">暂时没有任务</p>
     </div>
 
     <!-- 任务列表 -->

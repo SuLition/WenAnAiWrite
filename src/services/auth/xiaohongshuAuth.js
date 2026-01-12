@@ -11,6 +11,9 @@ import { SERVICE_URL } from '../api/config.js'
 let authCache = null
 let cacheLoaded = false
 
+// localStorage 缓存 key
+const XHS_CACHE_KEY = 'catparse_xhs_auth_cache'
+
 /**
  * 打开小红书登录窗口
  * 用户登录成功后自动获取 Cookie 并返回
@@ -56,6 +59,13 @@ export async function saveXhsAuth(authData) {
       authCache = data
       cacheLoaded = true
       
+      // 同步写入 localStorage 缓存
+      try {
+        localStorage.setItem(XHS_CACHE_KEY, JSON.stringify(data))
+      } catch (e) {
+        // 忽略
+      }
+      
       // 同步到 Python 后端服务
       await syncCookieToBackend(authData.cookie)
     }
@@ -72,7 +82,7 @@ export async function saveXhsAuth(authData) {
  */
 export async function loadXhsAuth() {
   try {
-    // 如果有缓存，直接返回
+    // 如果有内存缓存，直接返回
     if (cacheLoaded && authCache !== null) {
       return authCache
     }
@@ -81,6 +91,15 @@ export async function loadXhsAuth() {
     const data = await readJsonFile(FILE_NAMES.XHS_AUTH)
     authCache = data
     cacheLoaded = true
+    
+    // 同步更新 localStorage 缓存
+    if (data) {
+      try {
+        localStorage.setItem(XHS_CACHE_KEY, JSON.stringify(data))
+      } catch (e) {
+        // 忽略
+      }
+    }
     
     // 如果有有效的 Cookie，同步到后端
     if (data?.cookie) {
@@ -95,12 +114,38 @@ export async function loadXhsAuth() {
 }
 
 /**
+ * 同步从 localStorage 读取缓存（用于初始化，避免闪烁）
+ * @returns {object|null}
+ */
+export function loadXhsAuthSync() {
+  try {
+    const cached = localStorage.getItem(XHS_CACHE_KEY)
+    if (cached) {
+      const data = JSON.parse(cached)
+      authCache = data
+      cacheLoaded = true
+      return data
+    }
+  } catch (e) {
+    // 忽略
+  }
+  return null
+}
+
+/**
  * 清除小红书登录信息
  */
 export async function clearXhsAuth() {
   await removeFile(FILE_NAMES.XHS_AUTH)
   authCache = null
   cacheLoaded = true
+  
+  // 清除 localStorage 缓存
+  try {
+    localStorage.removeItem(XHS_CACHE_KEY)
+  } catch (e) {
+    // 忽略
+  }
   
   // 清除后端的 Cookie
   await syncCookieToBackend('')
@@ -174,6 +219,7 @@ export default {
   checkXhsCookie,
   saveXhsAuth,
   loadXhsAuth,
+  loadXhsAuthSync,
   clearXhsAuth,
   isXhsLoggedIn,
   getXhsCookie,
