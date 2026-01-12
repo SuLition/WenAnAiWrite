@@ -49,19 +49,19 @@ pub async fn extract_audio(
 
     // 执行 FFmpeg 提取音频
     let output = Command::new(ffmpeg_cmd)
-        .args(&[
+        .args([
             "-i",
             &video_path,
-            "-vn", // 不处理视频
+            "-vn",
             "-acodec",
-            "libmp3lame", // MP3 编码
+            "libmp3lame",
             "-ab",
-            "128k", // 音频比特率
+            "128k",
             "-ar",
-            "44100", // 采样率
+            "44100",
             "-ac",
-            "2",  // 声道数
-            "-y", // 覆盖已存在的文件
+            "2",
+            "-y",
             audio_path.to_str().unwrap(),
         ])
         .output()
