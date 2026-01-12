@@ -47,24 +47,11 @@ jobs:
           prerelease: false
           generate_release_notes: true
 
-  # 构建 Python 后端服务
+  # 构建 Python 后端服务 (仅 Windows)
   build-backend:
     name: Build Backend
     needs: create-release
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            target: windows
-            ext: .exe
-          - os: macos-latest
-            target: macos
-            ext: ''
-          - os: ubuntu-latest
-            target: linux
-            ext: ''
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -89,30 +76,14 @@ jobs:
       - name: Upload backend artifact
         uses: actions/upload-artifact@v4
         with:
-          name: backend-${{ matrix.target }}
-          path: parser-service/dist/backend_server${{ matrix.ext }}
+          name: backend-windows
+          path: parser-service/dist/backend_server.exe
 
-  # 构建 Tauri 应用
+  # 构建 Tauri 应用 (仅 Windows)
   build-tauri:
     name: Build Tauri App
-    needs: [create-release, build-backend]
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            target: windows
-            args: ''
-          - os: macos-latest
-            target: macos-intel
-            args: '--target x86_64-apple-darwin'
-          - os: macos-latest
-            target: macos-arm
-            args: '--target aarch64-apple-darwin'
-          - os: ubuntu-latest
-            target: linux
-            args: ''
-    runs-on: ${{ matrix.os }}
+    needs: [ create-release, build-backend ]
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -125,14 +96,6 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.os == 'macos-latest' && 'x86_64-apple-darwin,aarch64-apple-darwin' || '' }}
-
-      - name: Install dependencies (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
@@ -142,35 +105,11 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      # 下载对应平台的后端服务
-      - name: Download backend (Windows)
-        if: matrix.os == 'windows-latest'
+      - name: Download backend
         uses: actions/download-artifact@v4
         with:
           name: backend-windows
           path: src-tauri/binaries/
-
-      - name: Download backend (macOS)
-        if: matrix.os == 'macos-latest'
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-macos
-          path: src-tauri/binaries/
-
-      - name: Download backend (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-linux
-          path: src-tauri/binaries/
-
-      - name: Rename backend binary (Unix)
-        if: matrix.os != 'windows-latest'
-        run: |
-          chmod +x src-tauri/binaries/backend_server
-          if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            cp src-tauri/binaries/backend_server src-tauri/binaries/backend_server.exe || true
-          fi
 
       - name: Build Tauri App
         uses: tauri-apps/tauri-action@v0
@@ -180,12 +119,11 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
-          args: ${{ matrix.args }}
 
   # 发布 Release
   publish-release:
     name: Publish Release
-    needs: [create-release, build-tauri]
+    needs: [ create-release, build-tauri ]
     runs-on: ubuntu-latest
     steps:
       - name: Publish Release

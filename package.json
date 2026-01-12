@@ -31,7 +31,6 @@
     "vue-sonner": "^2.0.9"
   },
   "devDependencies": {
-    "@arco-design/web-vue": "^2.57.0",
     "@tauri-apps/cli": "^2.9.6",
     "@vicons/fluent": "^0.13.0",
     "@vitejs/plugin-vue": "^6.0.1",

@@ -3,9 +3,6 @@ import vue from '@vitejs/plugin-vue'
 import {spawn} from 'child_process'
 import path from 'path'
 import {fileURLToPath} from 'url'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite';
-import {ArcoResolver} from 'unplugin-vue-components/resolvers';
 
 
 // ES Module 中获取 __dirname
@@ -80,16 +77,6 @@ export default defineConfig({
     plugins: [
         vue(),
         startBackendPlugin(),
-        AutoImport({
-            resolvers: [ArcoResolver()],
-        }),
-        Components({
-            resolvers: [
-                ArcoResolver({
-                    sideEffect: true
-                })
-            ]
-        })
     ],
     resolve: {
         alias: {'@': '/src'},

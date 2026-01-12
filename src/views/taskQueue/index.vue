@@ -8,6 +8,9 @@ import {Motion, AnimatePresence} from 'motion-v';
 import CreateAudioTaskModal from './components/CreateAudioTaskModal.vue';
 import CreateTextTaskModal from './components/CreateTextTaskModal.vue';
 
+// 开发模式判断
+const isDev = import.meta.env.DEV;
+
 // Store
 const taskQueueStore = useTaskQueueStore();
 const configStore = useConfigStore();
@@ -214,10 +217,10 @@ const handleRemoveLatestTask = () => {
             </div>
           </Transition>
         </div>
-        <button class="clear-button" title="添加任务" @click="handlePushTask">
+        <button v-if="isDev" class="clear-button" title="添加任务" @click="handlePushTask">
           添加任务
         </button>
-        <button class="clear-button" title="添加任务" @click="handleRemoveLatestTask">
+        <button v-if="isDev" class="clear-button" title="移除任务" @click="handleRemoveLatestTask">
           移除任务
         </button>
       </div>
