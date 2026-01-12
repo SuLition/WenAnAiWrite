@@ -7,8 +7,8 @@
 export const ANIMATION_SPEED_MODES = {
     disabled: {value: 0.0, label: '禁用动画'},
     fast: {value: 0.3, label: '快速'},
-    normal: {value: 0.5, label: '标准'},
-    elegant: {value: 1.0, label: '优雅'}
+    normal: {value: 1.0, label: '标准'},
+    elegant: {value: 1.4, label: '优雅'}
 }
 
 // 速率选项（用于设置页选择）
@@ -120,13 +120,4 @@ export function applyAnimationVars(speedMode = 'normal') {
     Object.entries(vars).forEach(([key, value]) => {
         root.style.setProperty(key, value)
     })
-}
-
-/**
- * 获取速率模式的倍数值
- * @param {string} speedMode - 速率模式
- * @returns {number} 速率倍数
- */
-export function getSpeedMultiplier(speedMode) {
-    return ANIMATION_SPEED_MODES[speedMode]?.value || 1.0
 }

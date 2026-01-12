@@ -16,9 +16,10 @@ const configStore = useConfigStore();
 const {list: historyList, loading} = storeToRefs(historyStore);
 
 // 卡片动画配置
+const animationSpeed = computed(() => configStore.appearance.animationSpeed || 'normal');
 const currentAnimation = computed(() => {
   const anim = configStore.appearance.cardAnimation || 'fade';
-  return getCardAnimation(anim);
+  return getCardAnimation(anim, animationSpeed.value);
 });
 
 // 加载历史记录
@@ -112,7 +113,7 @@ const handleAddHistory = async () => {
       <h1 class="page-title">历史记录</h1>
       <div class="header-actions">
         <button v-if="historyList.length > 0" class="clear-button" @click="clearAll">清空记录</button>
-        <button class="clear-button" @click="handleAddHistory">添加历史</button>
+        <!--        <button class="clear-button" @click="handleAddHistory">添加历史</button>-->
       </div>
     </div>
 

@@ -3,7 +3,7 @@ import {computed, ref} from 'vue';
 import {useTaskQueueStore, useConfigStore, TASK_STATUS, TASK_TYPE} from '@/stores';
 import {storeToRefs} from 'pinia';
 import {getPlatformName, getPlatformColor} from '@/constants/platforms';
-import {getCardAnimation} from '@/constants/motionAnimations';
+import {getCardAnimation, getDropdownAnimation} from '@/constants/motionAnimations';
 import {Motion, AnimatePresence} from 'motion-v';
 import CreateAudioTaskModal from './components/CreateAudioTaskModal.vue';
 import CreateTextTaskModal from './components/CreateTextTaskModal.vue';
@@ -18,10 +18,14 @@ const taskCount = computed(() => taskQueueStore.totalCount);
 const hasActiveTasks = computed(() => taskQueueStore.hasPendingTasks);
 
 // 卡片动画配置
+const animationSpeed = computed(() => configStore.appearance.animationSpeed || 'normal');
 const currentAnimation = computed(() => {
   const anim = configStore.appearance.cardAnimation || 'fade';
-  return getCardAnimation(anim);
+  return getCardAnimation(anim, animationSpeed.value);
 });
+
+// 下拉菜单动画
+const dropdownAnimation = computed(() => getDropdownAnimation(animationSpeed.value));
 
 // 创建任务下拉菜单状态
 const showCreateMenu = ref(false);
@@ -194,8 +198,16 @@ const handleRemoveLatestTask = () => {
             </svg>
           </button>
           <!-- 下拉菜单 -->
-          <Transition name="fade">
-            <div v-if="showCreateMenu" class="create-menu">
+          <AnimatePresence>
+            <Motion
+                v-if="showCreateMenu"
+                :animate="dropdownAnimation.animate"
+                :exit="dropdownAnimation.exit"
+                :initial="dropdownAnimation.initial"
+                :transition="dropdownAnimation.transition"
+                as="div"
+                class="create-menu"
+            >
               <button class="menu-item" @click="openAudioModal">
                 <svg fill="none" viewBox="0 0 24 24">
                   <path
@@ -212,8 +224,8 @@ const handleRemoveLatestTask = () => {
                 </svg>
                 <span>文案改写</span>
               </button>
-            </div>
-          </Transition>
+            </Motion>
+          </AnimatePresence>
         </div>
         <button class="clear-button" title="添加任务" @click="handlePushTask">
           添加任务
@@ -253,9 +265,9 @@ const handleRemoveLatestTask = () => {
             :exit="currentAnimation?.exit"
             :initial="currentAnimation?.initial"
             :transition="currentAnimation?.transition"
-            layout
             as="div"
             class="task-card"
+            layout
         >
           <!-- 左侧封面图 -->
           <div class="card-cover">
@@ -769,7 +781,7 @@ const handleRemoveLatestTask = () => {
   border-radius: 10px;
   padding: 6px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  z-index: 100;
+  overflow: hidden;
 }
 
 .menu-item {
@@ -800,17 +812,5 @@ const handleRemoveLatestTask = () => {
 
 .menu-item:hover svg {
   color: var(--accent-color);
-}
-
-/* 菜单淡入淡出动画 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
 }
 </style>

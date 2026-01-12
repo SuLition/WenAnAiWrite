@@ -11,8 +11,16 @@
       </svg>
     </div>
 
-    <Transition name="dropdown">
-      <div v-if="isOpen" class="select-dropdown">
+    <AnimatePresence>
+      <Motion
+        v-if="isOpen"
+        :initial="currentDropdownAnimation.initial"
+        :animate="currentDropdownAnimation.animate"
+        :exit="currentDropdownAnimation.exit"
+        :transition="currentDropdownAnimation.transition"
+        as="div"
+        class="select-dropdown"
+      >
         <div class="select-options">
           <div
               v-for="option in options"
@@ -28,13 +36,16 @@
             {{ option.label }}
           </div>
         </div>
-      </div>
-    </Transition>
+      </Motion>
+    </AnimatePresence>
   </div>
 </template>
 
 <script setup>
 import {ref, computed, onMounted, onUnmounted} from 'vue';
+import {Motion, AnimatePresence} from 'motion-v';
+import {getDropdownAnimation} from '@/constants/motionAnimations';
+import {useConfigStore} from '@/stores';
 
 const props = defineProps({
   modelValue: {
@@ -72,6 +83,11 @@ const displayValue = computed(() => {
 const selectedOption = computed(() => {
   return props.options.find(opt => opt.value === props.modelValue);
 });
+
+// 动画速率
+const configStore = useConfigStore();
+const animationSpeed = computed(() => configStore.appearance.animationSpeed || 'normal');
+const currentDropdownAnimation = computed(() => getDropdownAnimation(animationSpeed.value));
 
 const toggle = () => {
   if (props.disabled) return;
@@ -253,17 +269,5 @@ onUnmounted(() => {
 .select-option.disabled:hover {
   background: transparent;
   color: var(--text-tertiary);
-}
-
-/* 下拉动画 */
-.dropdown-enter-active,
-.dropdown-leave-active {
-  transition: all var(--transition-fast, 200ms) var(--easing-ease, ease);
-}
-
-.dropdown-enter-from,
-.dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
 }
 </style>

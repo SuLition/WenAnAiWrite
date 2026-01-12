@@ -1,5 +1,8 @@
 @layer base {
     :root {
+        /* 启用 height: auto 动画支持 (Chrome 129+) */
+        interpolate-size: allow-keywords;
+        
         --primary-color: rgb(0, 161, 214);
         --primary-text: rgb(233, 233, 233);
         --scroller-color: color-mix(

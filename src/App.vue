@@ -9,6 +9,8 @@ import Sidebar from "./components/common/Sidebar.vue";
 import {Updater} from "./components/common";
 import {useThemeStore, useConfigStore, useUpdateStore} from './stores'
 import {getCurrentWindow} from '@tauri-apps/api/window'
+import {Motion, AnimatePresence} from 'motion-v'
+import {getPageAnimation} from '@/constants/motionAnimations'
 
 // Stores
 const themeStore = useThemeStore()
@@ -23,6 +25,8 @@ const toasterTheme = computed(() => themeStore.appliedTheme === 'dark' ? 'dark' 
 
 // 页面过渡效果
 const pageTransition = computed(() => configStore.appearance.pageTransition || 'fade')
+const animationSpeed = computed(() => configStore.appearance.animationSpeed || 'normal')
+const currentPageAnimation = computed(() => getPageAnimation(pageTransition.value, animationSpeed.value))
 
 // 初始化并显示窗口
 onMounted(async () => {
@@ -64,10 +68,20 @@ onMounted(async () => {
     <Sidebar/>
     <div class="main-content">
       <TitleBar/>
-      <router-view v-slot="{ Component }">
-        <transition :name="pageTransition" mode="out-in">
-          <component :is="Component"/>
-        </transition>
+      <router-view v-slot="{ Component, route }">
+        <AnimatePresence mode="wait">
+          <Motion
+            v-if="Component"
+            :key="route.path"
+            :initial="currentPageAnimation?.initial"
+            :animate="currentPageAnimation?.animate"
+            :exit="currentPageAnimation?.exit"
+            :transition="currentPageAnimation?.transition"
+            style="flex: 1; display: flex; flex-direction: column;"
+          >
+            <component :is="Component"/>
+          </Motion>
+        </AnimatePresence>
       </router-view>
       <!-- 消息通知 -->
       <Toaster :theme="toasterTheme" v-bind="toasterOptions"/>

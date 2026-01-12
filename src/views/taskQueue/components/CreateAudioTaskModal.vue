@@ -1,8 +1,24 @@
 <template>
   <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="visible" class="modal-overlay" @click.self="handleClose">
-        <div class="modal-container">
+    <AnimatePresence>
+      <Motion
+        v-if="visible"
+        :initial="currentModalAnimation.overlay.initial"
+        :animate="currentModalAnimation.overlay.animate"
+        :exit="currentModalAnimation.overlay.exit"
+        :transition="currentModalAnimation.overlay.transition"
+        as="div"
+        class="modal-overlay"
+        @click.self="handleClose"
+      >
+        <Motion
+          :initial="currentModalAnimation.container.initial"
+          :animate="currentModalAnimation.container.animate"
+          :exit="currentModalAnimation.container.exit"
+          :transition="currentModalAnimation.container.transition"
+          as="div"
+          class="modal-container"
+        >
           <!-- 标题栏 -->
           <div class="modal-header">
             <h3 class="modal-title">创建音频识别任务</h3>
@@ -92,9 +108,9 @@
               {{ isExtracting ? '处理中...' : '添加任务' }}
             </button>
           </div>
-        </div>
-      </div>
-    </Transition>
+        </Motion>
+      </Motion>
+    </AnimatePresence>
   </Teleport>
 </template>
 
@@ -105,9 +121,11 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { readFile } from '@tauri-apps/plugin-fs';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
-import { useTaskQueueStore, TASK_TYPE } from '@/stores';
+import { useTaskQueueStore, useConfigStore, TASK_TYPE } from '@/stores';
 import { AudioPlayer } from '@/components/common';
 import { copyAudioToAppData, detectFileType, getSupportedExtensions } from '@/services/storage/localAudioStorage';
+import { Motion, AnimatePresence } from 'motion-v';
+import { getModalAnimation } from '@/constants/motionAnimations';
 
 const props = defineProps({
   visible: Boolean
@@ -116,6 +134,11 @@ const props = defineProps({
 const emit = defineEmits(['update:visible']);
 
 const taskQueueStore = useTaskQueueStore();
+const configStore = useConfigStore();
+
+// 动画速率
+const animationSpeed = computed(() => configStore.appearance.animationSpeed || 'normal');
+const currentModalAnimation = computed(() => getModalAnimation(animationSpeed.value));
 
 // 状态
 const selectedFile = ref(null);
@@ -660,26 +683,5 @@ const handleSubmit = async () => {
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-/* 弹窗动画 */
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.modal-enter-active .modal-container,
-.modal-leave-active .modal-container {
-  transition: transform 0.2s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-from .modal-container,
-.modal-leave-to .modal-container {
-  transform: scale(0.95);
 }
 </style>
